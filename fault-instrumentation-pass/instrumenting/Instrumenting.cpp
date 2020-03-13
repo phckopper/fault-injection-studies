@@ -18,8 +18,7 @@ namespace {
     static char ID;
     InstrumentingPass() : FunctionPass(ID) {}
     
-    void injectInstruction(Instruction *thisInst, Value *addrToInject, Value *mask) {
-            std::uintptr_t address = reinterpret_cast<std::uintptr_t>(thisInst);
+    void injectInstruction(Instruction *thisInst, std::uintptr_t address, Value *addrToInject, Value *mask) {
             errs() << "Injecting at address " << address << ": ";
             errs() << *thisInst << "\n";
 
@@ -70,9 +69,14 @@ namespace {
         }
       }
 
+      std::error_code errorCode; 
+      raw_fd_ostream address_map("address.map", errorCode);
+
       for(Instruction *I: toInject) {
-        // Imprime cada instrução (para debug)
-        injectInstruction(I, addrToInject, injectionMask);
+        std::uintptr_t address = reinterpret_cast<std::uintptr_t>(I);
+        injectInstruction(I, address, addrToInject, injectionMask);
+
+        address_map << address << "," << *I << "\n";
         // Modificamos a função
       }
         

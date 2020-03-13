@@ -18,7 +18,7 @@ namespace {
     static char ID;
     InstrumentingPass() : FunctionPass(ID) {}
     
-    void injectInstruction(Instruction *thisInst, Value *addrToInject) {
+    void injectInstruction(Instruction *thisInst, Value *addrToInject, Value *mask) {
             std::uintptr_t address = reinterpret_cast<std::uintptr_t>(thisInst);
             errs() << "Injecting at address " << address << ": ";
             errs() << *thisInst << "\n";
@@ -32,7 +32,7 @@ namespace {
             Instruction *ThenTerm , *ElseTerm;
             SplitBlockAndInsertIfThenElse(cmp, nextInst, &ThenTerm, &ElseTerm, nullptr);
             builder.SetInsertPoint(ThenTerm);
-            Value* error = builder.CreateXor(thisInst, 0x00000001);
+            Value* error = builder.CreateXor(thisInst, mask);
 
             builder.SetInsertPoint(nextInst);
 
@@ -49,8 +49,11 @@ namespace {
           return false;
 
       LLVMContext& Ctx = F.getContext();
-        FunctionCallee shouldInject = F.getParent()->getOrInsertFunction(
-        "shouldInject", Type::getInt64Ty(Ctx)
+      FunctionCallee shouldInject = F.getParent()->getOrInsertFunction(
+        "_shouldInject", Type::getInt64Ty(Ctx)
+      );
+      FunctionCallee getInjectionMask = F.getParent()->getOrInsertFunction(
+        "_getInjectionMask", Type::getInt32Ty(Ctx)
       );
         
 
@@ -58,7 +61,8 @@ namespace {
       std::vector<Instruction *> toInject;
 
       IRBuilder<> builder(F.getEntryBlock().getFirstNonPHIOrDbgOrLifetime());
-      Value *addrToInject = builder.CreateCall(shouldInject);
+      Value *addrToInject  = builder.CreateCall(shouldInject);
+      Value *injectionMask = builder.CreateCall(getInjectionMask);
 
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         if(I->getType() == Type::getInt32Ty(Ctx)) {
@@ -68,7 +72,7 @@ namespace {
 
       for(Instruction *I: toInject) {
         // Imprime cada instrução (para debug)
-        injectInstruction(I, addrToInject);
+        injectInstruction(I, addrToInject, injectionMask);
         // Modificamos a função
       }
         

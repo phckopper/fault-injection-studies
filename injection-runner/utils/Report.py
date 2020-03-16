@@ -46,5 +46,5 @@ class Report(object):
                 good += 1
             else:
                 bad += 1
-        return "@{} {} | Bad: {} Good: {} Total: {} Percentage: {:.2f}%\n".format(
+        return "@{} {:40} | Bad: {} Good: {} Total: {} Percentage: {:.2f}%\n".format(
             data[0]["instr"].address, data[0]["instr"].text, bad, good, bad+good, (bad/(bad+good)*100))

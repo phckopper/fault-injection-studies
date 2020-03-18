@@ -2,7 +2,7 @@
 cd examples
 clang -Xclang -load -Xclang ../fault-instrumentation-pass/build/instrumenting/libInstrumentingPass.* -O0 -c main.c
 cc -c injectionManager.c
-cc injectionManager.o main.o
+cc -lm injectionManager.o main.o
 echo "----------------------------"
 echo "running..."
 echo "----------------------------"

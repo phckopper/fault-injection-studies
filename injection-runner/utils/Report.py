@@ -28,8 +28,8 @@ class Report(object):
     mask -- the mask that was injected
     retult -- final output of the program
     """
-    def add_run(self, instruction, mask, result):
-        data = dict(instr=instruction, mask=mask, result=str(result))
+    def add_run(self, instruction, mask, result="", hanged=False):
+        data = dict(instr=instruction, mask=mask, result=str(result), hanged=hanged)
         self.runs.setdefault(instruction.address, []).append(data)
 
     """ Compiles the report and writes it to location"""
@@ -41,10 +41,16 @@ class Report(object):
     def _process_instruction(self, data):
         good = 0
         bad = 0
+        hanged = 0
         for run in data:
             if run["result"] == self.golden:
                 good += 1
             else:
-                bad += 1
-        return "@{} {:40} | Bad: {} Good: {} Total: {} Percentage: {:.2f}%\n".format(
-            data[0]["instr"].address, data[0]["instr"].text, bad, good, bad+good, (bad/(bad+good)*100))
+                if run["hanged"]:
+                    hanged += 1
+                else:
+                    bad += 1
+        total = len(data)
+        return "@{} {:40} | SDU: {} Correct: {} Hang: {} Percentage: {:.2f}%\n".format(
+            data[0]["instr"].address, data[0]["instr"].text, bad, good, hanged, ((hanged+bad)/(total)*100))
+

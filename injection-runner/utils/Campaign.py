@@ -1,7 +1,7 @@
 from time import time
 from colored import attr, fg, stylize
 from utils.AddressMap import AddressMap
-from utils.Executable import Executable, ExecutionHanged
+from utils.Executable import Executable, ExecutionCrashed, ExecutionHanged
 from utils.Report import Report
 
 class Campaign(object):
@@ -29,7 +29,7 @@ class Campaign(object):
         _start_time = time()
         golden = self._executable.run_golden()
         golden_time = (time() - _start_time) * self._tolerance
-        print(golden)
+        print(golden, golden_time)
         self._report.add_golden(golden)
 
         print(stylize("Starting injection", fg("blue")))
@@ -45,6 +45,9 @@ class Campaign(object):
                 except ExecutionHanged:
                     print("Mask: ", hex(mask), fg("red"), "HANGED", attr("reset"))
                     self._report.add_run(instr, mask, hanged=True)
+                except ExecutionCrashed:
+                    print("Mask: ", hex(mask), fg("red"), "CRASHED", attr("reset"))
+                    self._report.add_run(instr, mask, crashed=True)
 
         self._report.write_report()
 

@@ -3,6 +3,9 @@ import subprocess
 class ExecutionHanged(Exception):
     pass
 
+class ExecutionCrashed(Exception):
+    pass
+
 class Executable(object):
     """
     Represents the executable to be injected during a campaing
@@ -29,7 +32,11 @@ class Executable(object):
     def run_injection(self, address, mask=1, timeout=0):
         env = dict(INJECTION_ADDR=str(address), INJECTION_MASK=str(mask))
         try:
-            output = subprocess.run(self._pathToExecutable, capture_output=True, env=env, timeout=timeout)
+            output = subprocess.run(self._pathToExecutable, capture_output=True, env=env, timeout=timeout, check=True)
             return output.stdout
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as e:
             raise ExecutionHanged
+        except subprocess.CalledProcessError as e:
+            if e.returncode < 0:
+                # TODO: differentiate between signals
+                raise ExecutionCrashed

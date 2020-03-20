@@ -11,7 +11,11 @@ void print_if_prime(int n) {
        return;
    }
 
-   while(i < sqrt(n)) {
+   int limit = (int) sqrt(n); // force cast to int so we can inject
+   if(n <= 2) {
+       *(volatile int*)0 = 0;
+   }
+   while(i < limit) {
         if(n % i == 0) {
             printf("%d NOT PRIME\n", n);
             return;
@@ -22,7 +26,7 @@ void print_if_prime(int n) {
 }
 
 int main() {
-    for(int i = 0; i < N; ++i)
+    for(int i = 3; i < N; ++i)
         print_if_prime(i);
     
     return 0;

@@ -7,15 +7,17 @@
 #define ITER 100000
 
 void do_math(void) {
+    double abc[10];
     uint32_t inside = 0;
     for(uint32_t i = 0; i < ITER; ++i) {
-        float x = (float)rand()/RAND_MAX;
-        float y = (float)rand()/RAND_MAX;
+        float x = (double)rand()/RAND_MAX;
+        float y = (double)rand()/RAND_MAX;
         if((x*x + y*y) <= 1)
             inside++;
     }
-    float pi = (float) inside/ITER * 4;
-    printf("%.5f\n", pi);
+    double pi = (double) inside/ITER * 4;
+    abc[5] = pi;
+    printf("%.5f\n", abc[5]);
 }
 
 int main() {

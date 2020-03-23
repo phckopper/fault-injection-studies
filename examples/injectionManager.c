@@ -13,9 +13,9 @@ uint64_t _shouldInject(void) {
     }
 }
 
-uint32_t _getInjectionMask(void) {
+uint64_t _getInjectionMask(void) {
     if(getenv("INJECTION_MASK")) {
-        uint32_t mask = strtol(getenv("INJECTION_MASK"), NULL, 10);
+        uint64_t mask = strtol(getenv("INJECTION_MASK"), NULL, 10);
         //printf("Mask: %08X\n", mask);
         return mask;
     }

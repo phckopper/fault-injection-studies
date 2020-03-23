@@ -36,7 +36,7 @@ class Campaign(object):
 
         for instr in self._map:
             print(fg("white"), attr("bold"), "Injecting:\t", instr.text, attr("reset"))
-            for i in range(32):
+            for i in range(instr.width):
                 mask = self._get_bit_mask(i)
                 try:
                     result = self._executable.run_injection(instr.address, mask, golden_time)

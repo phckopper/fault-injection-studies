@@ -1,33 +1,26 @@
+#include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
-#define N 99
+#define SEED 992403954
+#define ITER 100000
 
-void print_if_prime(int n) {
-   int i = 3;
-
-   if(n % 2 == 0) {
-       printf("%d NOT PRIME\n", n);
-       return;
-   }
-
-   int limit = (int) sqrt(n); // force cast to int so we can inject
-   if(n <= 2) {
-       *(volatile int*)0 = 0;
-   }
-   while(i < limit) {
-        if(n % i == 0) {
-            printf("%d NOT PRIME\n", n);
-            return;
-        }
-        i += 2;
-   }
-   printf("%d PRIME\n", n);
+void do_math(void) {
+    uint32_t inside = 0;
+    for(uint32_t i = 0; i < ITER; ++i) {
+        float x = (float)rand()/RAND_MAX;
+        float y = (float)rand()/RAND_MAX;
+        if((x*x + y*y) <= 1)
+            inside++;
+    }
+    float pi = (float) inside/ITER * 4;
+    printf("%.5f\n", pi);
 }
 
 int main() {
-    for(int i = 3; i < N; ++i)
-        print_if_prime(i);
+    srand(SEED);
+    do_math();
     
     return 0;
 }

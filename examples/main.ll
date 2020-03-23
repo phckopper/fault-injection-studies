@@ -10,7 +10,7 @@ target triple = "x86_64-pc-linux-gnu"
 define dso_local void @print_if_prime(i32) #0 {
   %2 = call i64 @_shouldInject()
   %3 = call i32 @_getInjectionMask()
-  %4 = icmp eq i64 94369403854248, %2
+  %4 = icmp eq i64 94566862202088, %2
   br i1 %4, label %5, label %7
 
 5:                                                ; preds = %1
@@ -28,7 +28,7 @@ define dso_local void @print_if_prime(i32) #0 {
   store i32 %0, i32* %10, align 4
   store i32 3, i32* %11, align 4
   %13 = load i32, i32* %10, align 4
-  %14 = icmp eq i64 94369403829688, %2
+  %14 = icmp eq i64 94566862179848, %2
   br i1 %14, label %15, label %17
 
 15:                                               ; preds = %8
@@ -41,7 +41,7 @@ define dso_local void @print_if_prime(i32) #0 {
 18:                                               ; preds = %17, %15
   %19 = phi i32 [ %16, %15 ], [ %13, %17 ]
   %20 = srem i32 %19, 2
-  %21 = icmp eq i64 94369403829312, %2
+  %21 = icmp eq i64 94566862179472, %2
   br i1 %21, label %22, label %24
 
 22:                                               ; preds = %18
@@ -58,7 +58,7 @@ define dso_local void @print_if_prime(i32) #0 {
 
 28:                                               ; preds = %25
   %29 = load i32, i32* %10, align 4
-  %30 = icmp eq i64 94369403836424, %2
+  %30 = icmp eq i64 94566862186584, %2
   br i1 %30, label %31, label %33
 
 31:                                               ; preds = %28
@@ -71,7 +71,7 @@ define dso_local void @print_if_prime(i32) #0 {
 34:                                               ; preds = %33, %31
   %35 = phi i32 [ %32, %31 ], [ %29, %33 ]
   %36 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str, i64 0, i64 0), i32 %35)
-  %37 = icmp eq i64 94369403840088, %2
+  %37 = icmp eq i64 94566862190248, %2
   br i1 %37, label %38, label %40
 
 38:                                               ; preds = %34
@@ -83,11 +83,11 @@ define dso_local void @print_if_prime(i32) #0 {
 
 41:                                               ; preds = %40, %38
   %42 = phi i32 [ %39, %38 ], [ %36, %40 ]
-  br label %144
+  br label %154
 
 43:                                               ; preds = %25
   %44 = load i32, i32* %10, align 4
-  %45 = icmp eq i64 94369403841864, %2
+  %45 = icmp eq i64 94566862192024, %2
   br i1 %45, label %46, label %48
 
 46:                                               ; preds = %43
@@ -102,7 +102,7 @@ define dso_local void @print_if_prime(i32) #0 {
   %51 = sitofp i32 %50 to double
   %52 = call double @sqrt(double %51) #3
   %53 = fptosi double %52 to i32
-  %54 = icmp eq i64 94369403842184, %2
+  %54 = icmp eq i64 94566862192344, %2
   br i1 %54, label %55, label %57
 
 55:                                               ; preds = %49
@@ -115,170 +115,191 @@ define dso_local void @print_if_prime(i32) #0 {
 58:                                               ; preds = %57, %55
   %59 = phi i32 [ %56, %55 ], [ %53, %57 ]
   store i32 %59, i32* %12, align 4
-  br label %60
+  %60 = load i32, i32* %10, align 4
+  %61 = icmp eq i64 94566862192568, %2
+  br i1 %61, label %62, label %64
 
-60:                                               ; preds = %127, %58
-  %61 = load i32, i32* %11, align 4
-  %62 = icmp eq i64 94369403842504, %2
-  br i1 %62, label %63, label %65
+62:                                               ; preds = %58
+  %63 = xor i32 %60, %3
+  br label %65
 
-63:                                               ; preds = %60
-  %64 = xor i32 %61, %3
-  br label %66
+64:                                               ; preds = %58
+  br label %65
 
-65:                                               ; preds = %60
-  br label %66
+65:                                               ; preds = %64, %62
+  %66 = phi i32 [ %63, %62 ], [ %60, %64 ]
+  %67 = icmp sle i32 %66, 2
+  br i1 %67, label %68, label %69
 
-66:                                               ; preds = %65, %63
-  %67 = phi i32 [ %64, %63 ], [ %61, %65 ]
-  %68 = load i32, i32* %12, align 4
-  %69 = icmp eq i64 94369403842600, %2
-  br i1 %69, label %70, label %72
+68:                                               ; preds = %65
+  store volatile i32 0, i32* null, align 4
+  br label %69
 
-70:                                               ; preds = %66
-  %71 = xor i32 %68, %3
-  br label %73
+69:                                               ; preds = %68, %65
+  br label %70
 
-72:                                               ; preds = %66
-  br label %73
+70:                                               ; preds = %137, %69
+  %71 = load i32, i32* %11, align 4
+  %72 = icmp eq i64 94566862186840, %2
+  br i1 %72, label %73, label %75
 
-73:                                               ; preds = %72, %70
-  %74 = phi i32 [ %71, %70 ], [ %68, %72 ]
-  %75 = icmp slt i32 %67, %74
-  br i1 %75, label %76, label %129
+73:                                               ; preds = %70
+  %74 = xor i32 %71, %3
+  br label %76
 
-76:                                               ; preds = %73
-  %77 = load i32, i32* %10, align 4
-  %78 = icmp eq i64 94369403842696, %2
-  br i1 %78, label %79, label %81
+75:                                               ; preds = %70
+  br label %76
 
-79:                                               ; preds = %76
-  %80 = xor i32 %77, %3
-  br label %82
+76:                                               ; preds = %75, %73
+  %77 = phi i32 [ %74, %73 ], [ %71, %75 ]
+  %78 = load i32, i32* %12, align 4
+  %79 = icmp eq i64 94566862180120, %2
+  br i1 %79, label %80, label %82
 
-81:                                               ; preds = %76
-  br label %82
+80:                                               ; preds = %76
+  %81 = xor i32 %78, %3
+  br label %83
 
-82:                                               ; preds = %81, %79
-  %83 = phi i32 [ %80, %79 ], [ %77, %81 ]
-  %84 = load i32, i32* %11, align 4
-  %85 = icmp eq i64 94369403843032, %2
-  br i1 %85, label %86, label %88
+82:                                               ; preds = %76
+  br label %83
 
-86:                                               ; preds = %82
-  %87 = xor i32 %84, %3
-  br label %89
+83:                                               ; preds = %82, %80
+  %84 = phi i32 [ %81, %80 ], [ %78, %82 ]
+  %85 = icmp slt i32 %77, %84
+  br i1 %85, label %86, label %139
 
-88:                                               ; preds = %82
-  br label %89
+86:                                               ; preds = %83
+  %87 = load i32, i32* %10, align 4
+  %88 = icmp eq i64 94566862194040, %2
+  br i1 %88, label %89, label %91
 
-89:                                               ; preds = %88, %86
-  %90 = phi i32 [ %87, %86 ], [ %84, %88 ]
-  %91 = srem i32 %83, %90
-  %92 = icmp eq i64 94369403836944, %2
-  br i1 %92, label %93, label %95
+89:                                               ; preds = %86
+  %90 = xor i32 %87, %3
+  br label %92
 
-93:                                               ; preds = %89
-  %94 = xor i32 %91, %3
-  br label %96
+91:                                               ; preds = %86
+  br label %92
 
-95:                                               ; preds = %89
-  br label %96
+92:                                               ; preds = %91, %89
+  %93 = phi i32 [ %90, %89 ], [ %87, %91 ]
+  %94 = load i32, i32* %11, align 4
+  %95 = icmp eq i64 94566862194136, %2
+  br i1 %95, label %96, label %98
 
-96:                                               ; preds = %95, %93
-  %97 = phi i32 [ %94, %93 ], [ %91, %95 ]
-  %98 = icmp eq i32 %97, 0
-  br i1 %98, label %99, label %114
+96:                                               ; preds = %92
+  %97 = xor i32 %94, %3
+  br label %99
 
-99:                                               ; preds = %96
-  %100 = load i32, i32* %10, align 4
-  %101 = icmp eq i64 94369403843128, %2
-  br i1 %101, label %102, label %104
+98:                                               ; preds = %92
+  br label %99
 
-102:                                              ; preds = %99
-  %103 = xor i32 %100, %3
-  br label %105
+99:                                               ; preds = %98, %96
+  %100 = phi i32 [ %97, %96 ], [ %94, %98 ]
+  %101 = srem i32 %93, %100
+  %102 = icmp eq i64 94566862186336, %2
+  br i1 %102, label %103, label %105
 
-104:                                              ; preds = %99
-  br label %105
+103:                                              ; preds = %99
+  %104 = xor i32 %101, %3
+  br label %106
 
-105:                                              ; preds = %104, %102
-  %106 = phi i32 [ %103, %102 ], [ %100, %104 ]
-  %107 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str, i64 0, i64 0), i32 %106)
-  %108 = icmp eq i64 94369403843272, %2
-  br i1 %108, label %109, label %111
+105:                                              ; preds = %99
+  br label %106
 
-109:                                              ; preds = %105
-  %110 = xor i32 %107, %3
-  br label %112
+106:                                              ; preds = %105, %103
+  %107 = phi i32 [ %104, %103 ], [ %101, %105 ]
+  %108 = icmp eq i32 %107, 0
+  br i1 %108, label %109, label %124
 
-111:                                              ; preds = %105
-  br label %112
+109:                                              ; preds = %106
+  %110 = load i32, i32* %10, align 4
+  %111 = icmp eq i64 94566862194232, %2
+  br i1 %111, label %112, label %114
 
-112:                                              ; preds = %111, %109
-  %113 = phi i32 [ %110, %109 ], [ %107, %111 ]
-  br label %144
+112:                                              ; preds = %109
+  %113 = xor i32 %110, %3
+  br label %115
 
-114:                                              ; preds = %96
-  %115 = load i32, i32* %11, align 4
-  %116 = icmp eq i64 94369403843480, %2
-  br i1 %116, label %117, label %119
+114:                                              ; preds = %109
+  br label %115
 
-117:                                              ; preds = %114
-  %118 = xor i32 %115, %3
-  br label %120
+115:                                              ; preds = %114, %112
+  %116 = phi i32 [ %113, %112 ], [ %110, %114 ]
+  %117 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str, i64 0, i64 0), i32 %116)
+  %118 = icmp eq i64 94566862194520, %2
+  br i1 %118, label %119, label %121
 
-119:                                              ; preds = %114
-  br label %120
+119:                                              ; preds = %115
+  %120 = xor i32 %117, %3
+  br label %122
 
-120:                                              ; preds = %119, %117
-  %121 = phi i32 [ %118, %117 ], [ %115, %119 ]
-  %122 = add nsw i32 %121, 2
-  %123 = icmp eq i64 94369403841088, %2
-  br i1 %123, label %124, label %126
+121:                                              ; preds = %115
+  br label %122
 
-124:                                              ; preds = %120
-  %125 = xor i32 %122, %3
-  br label %127
+122:                                              ; preds = %121, %119
+  %123 = phi i32 [ %120, %119 ], [ %117, %121 ]
+  br label %154
 
-126:                                              ; preds = %120
-  br label %127
+124:                                              ; preds = %106
+  %125 = load i32, i32* %11, align 4
+  %126 = icmp eq i64 94566862194728, %2
+  br i1 %126, label %127, label %129
 
-127:                                              ; preds = %126, %124
-  %128 = phi i32 [ %125, %124 ], [ %122, %126 ]
-  store i32 %128, i32* %11, align 4
-  br label %60
+127:                                              ; preds = %124
+  %128 = xor i32 %125, %3
+  br label %130
 
-129:                                              ; preds = %73
-  %130 = load i32, i32* %10, align 4
-  %131 = icmp eq i64 94369403844056, %2
-  br i1 %131, label %132, label %134
+129:                                              ; preds = %124
+  br label %130
 
-132:                                              ; preds = %129
-  %133 = xor i32 %130, %3
-  br label %135
+130:                                              ; preds = %129, %127
+  %131 = phi i32 [ %128, %127 ], [ %125, %129 ]
+  %132 = add nsw i32 %131, 2
+  %133 = icmp eq i64 94566862191248, %2
+  br i1 %133, label %134, label %136
 
-134:                                              ; preds = %129
-  br label %135
+134:                                              ; preds = %130
+  %135 = xor i32 %132, %3
+  br label %137
 
-135:                                              ; preds = %134, %132
-  %136 = phi i32 [ %133, %132 ], [ %130, %134 ]
-  %137 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.1, i64 0, i64 0), i32 %136)
-  %138 = icmp eq i64 94369403844200, %2
-  br i1 %138, label %139, label %141
+136:                                              ; preds = %130
+  br label %137
 
-139:                                              ; preds = %135
-  %140 = xor i32 %137, %3
-  br label %142
+137:                                              ; preds = %136, %134
+  %138 = phi i32 [ %135, %134 ], [ %132, %136 ]
+  store i32 %138, i32* %11, align 4
+  br label %70
 
-141:                                              ; preds = %135
-  br label %142
+139:                                              ; preds = %83
+  %140 = load i32, i32* %10, align 4
+  %141 = icmp eq i64 94566862195304, %2
+  br i1 %141, label %142, label %144
 
-142:                                              ; preds = %141, %139
-  %143 = phi i32 [ %140, %139 ], [ %137, %141 ]
-  br label %144
+142:                                              ; preds = %139
+  %143 = xor i32 %140, %3
+  br label %145
 
-144:                                              ; preds = %142, %112, %41
+144:                                              ; preds = %139
+  br label %145
+
+145:                                              ; preds = %144, %142
+  %146 = phi i32 [ %143, %142 ], [ %140, %144 ]
+  %147 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.1, i64 0, i64 0), i32 %146)
+  %148 = icmp eq i64 94566862195448, %2
+  br i1 %148, label %149, label %151
+
+149:                                              ; preds = %145
+  %150 = xor i32 %147, %3
+  br label %152
+
+151:                                              ; preds = %145
+  br label %152
+
+152:                                              ; preds = %151, %149
+  %153 = phi i32 [ %150, %149 ], [ %147, %151 ]
+  br label %154
+
+154:                                              ; preds = %152, %122, %41
   ret void
 }
 
@@ -292,7 +313,7 @@ define dso_local i32 @main() #0 {
   %1 = alloca i32, align 4
   %2 = alloca i32, align 4
   store i32 0, i32* %1, align 4
-  store i32 0, i32* %2, align 4
+  store i32 3, i32* %2, align 4
   br label %3
 
 3:                                                ; preds = %8, %0

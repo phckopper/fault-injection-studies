@@ -31,11 +31,18 @@ namespace {
             Instruction *ThenTerm , *ElseTerm;
             SplitBlockAndInsertIfThenElse(cmp, nextInst, &ThenTerm, &ElseTerm, nullptr);
             builder.SetInsertPoint(ThenTerm);
-            Value* error = builder.CreateXor(thisInst, mask);
+            Value* error;
+            if(thisInst->getType() == Type::getFloatTy(thisInst->getContext())) {
+                Value* tmp  = builder.CreateBitCast(thisInst, Type::getInt32Ty(thisInst->getContext()));
+                Value* tmp2 = builder.CreateXor(tmp, mask);
+                error = builder.CreateBitCast(tmp2, Type::getFloatTy(thisInst->getContext()));
+            } else {
+                error = builder.CreateXor(thisInst, mask);
+            }
 
             builder.SetInsertPoint(nextInst);
 
-            PHINode* phi = builder.CreatePHI(Type::getInt32Ty(thisInst->getContext()), 2, "injection");
+            PHINode* phi = builder.CreatePHI(thisInst->getType(), 2, "injection");
             phi->addIncoming(error, ThenTerm->getParent());
             
             thisInst->replaceUsesOutsideBlock(phi, ThenTerm->getParent());
@@ -64,7 +71,7 @@ namespace {
       Value *injectionMask = builder.CreateCall(getInjectionMask);
 
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
-        if(I->getType() == Type::getInt32Ty(Ctx)) {
+        if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
             toInject.push_back(&*I);
         }
       }

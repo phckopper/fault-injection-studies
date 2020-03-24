@@ -8,17 +8,21 @@ Gerenciador de campanhas de injeção de falhas escrito em Python 3.8, com supor
 
 ### Instalação
 
-A única dependência (por enquanto) é a biblioteca `colored`, que pode ser instalada via pip.
+Para gerenciamento das dependências, é utilizado o pipenv, que pode ser instalado usando o pip3.
+
+Para instalar as bibliotecas necessárias, use:
 ```bash
-pip install -U colored
+pipenv install
 ```
+
+E um ambiente virtual será criado automaticamente para conter todas as dependências :)
 
 ### Uso
 
 Para rodar uma campanha de injeção num binário, é necessário ter ele e o seu arquivo de mapa de endereços. Tendo eles, é possível rodar uma campanha rodando:
 
 ```bash
-./injection_runner.py ../examples/a.out ../examples/address.map
+pipenv run python3 injection_runner.py ../examples/a.out ../examples/address.map
 ```
 Onde o primeiro arquivo é o binário a ser testado e o segundo é o arquivo de mapa.
 

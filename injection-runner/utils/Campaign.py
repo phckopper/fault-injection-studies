@@ -24,6 +24,7 @@ class Campaign(object):
     """Runs the campaign, printing the results to stdout"""
     def run(self):
         print(stylize("Starting campaign", fg("blue")))
+        self._report.start_campaign()
 
         print(stylize("Getting golden output...", fg("yellow")))
         _start_time = time()
@@ -36,20 +37,19 @@ class Campaign(object):
 
         for instr in self._map:
             print(fg("white"), attr("bold"), "Injecting:\t", instr.text, attr("reset"))
+            self._report.add_and_start_instruction(instr.address, instr.width, instr.text)
             for i in range(instr.width):
                 mask = self._get_bit_mask(i)
                 try:
                     result = self._executable.run_injection(instr.address, mask, golden_time)
                     print("Mask: ", hex(mask), "\t", result)
-                    self._report.add_run(instr, mask, result=result)
+                    self._report.add_run(mask, result=result)
                 except ExecutionHanged:
                     print("Mask: ", hex(mask), fg("red"), "HANGED", attr("reset"))
-                    self._report.add_run(instr, mask, hanged=True)
+                    self._report.add_run(mask, hanged=True)
                 except ExecutionCrashed:
                     print("Mask: ", hex(mask), fg("red"), "CRASHED", attr("reset"))
-                    self._report.add_run(instr, mask, crashed=True)
-
-        self._report.write_report()
+                    self._report.add_run(mask, crashed=True)
 
     def _get_bit_mask(self, i):
         return (1 << i)

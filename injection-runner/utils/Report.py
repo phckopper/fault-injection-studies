@@ -1,13 +1,25 @@
+from utils.Models import *
+
 class Report(object):
     """
     This class implements report generation features for the injection campaigns
+    Data is saved into a sqlite3 database
 
     Arguments:
     location -- where to save the report (string)
     """
     def __init__(self, location):
-        self.runs = {}
-        self.location = location
+        database.connect()
+        database.create_tables([Campaign, Instruction, Run])
+
+    """
+    Starts a new campaign with a new set of parameters
+
+    Arguments:
+    params -- parameters used for the simulations
+    """
+    def start_campaign(self, params=""):
+        self._current_campaign = Campaign(params=params)
 
     """
     Adds golden output to report.
@@ -17,43 +29,35 @@ class Report(object):
     golden -- golden output (string)
     """
     def add_golden(self, golden):
-        self.golden = str(golden)
+        self._current_campaign.golden = str(golden)
+        self._current_campaign.save()
+
+    """
+    Adds a new instruction and starts adding subsequent runs to it
+
+    Arguments:
+    address -- address of the instruction (int)
+    width -- bit width of it's value (int)
+    text -- textual IR representation (string)
+    """
+    def add_and_start_instruction(self, address, width, text):
+        self._current_instruction = Instruction()
+        self._current_instruction.address = address
+        self._current_instruction.width   = width
+        self._current_instruction.text    = text
+
 
     """
     Adds a run to the report.
-    Stores every injected run instruction, mask and result to an internal list.
+    Stores every injected run  mask and result.
 
     Arguments:
-    instruction -- the instruction which was injected
     mask -- the mask that was injected
     retult -- final output of the program
     """
-    def add_run(self, instruction, mask, result="", hanged=False, crashed=False):
-        data = dict(instr=instruction, mask=mask, result=str(result), hanged=hanged, crashed=crashed)
-        self.runs.setdefault(instruction.address, []).append(data)
-
-    """ Compiles the report and writes it to location"""
-    def write_report(self):
-        with open(self.location, "w") as f:
-            for i in self.runs:
-                f.write(self._process_instruction(self.runs[i]))
-
-    def _process_instruction(self, data):
-        good = 0
-        bad = 0
-        hanged = 0
-        crashed = 0
-        for run in data:
-            if run["result"] == self.golden:
-                good += 1
-            else:
-                if run["hanged"]:
-                    hanged += 1
-                elif run["crashed"]:
-                    crashed += 1
-                else:
-                    bad += 1
-        total = len(data)
-        return "@{} {:40} | SDU: {} Correct: {} Hang: {} Crash: {} Percentage: {:.2f}%\n".format(
-            data[0]["instr"].address, data[0]["instr"].text, bad, good, hanged, crashed, ((hanged+bad)/(total)*100))
+    def add_run(self, mask, result="", hanged=False, crashed=False):
+        run = Run(mask=hex(mask), result=str(result), hanged=hanged, crashed=crashed)
+        run.campaign = self._current_campaign
+        run.instruction = self._current_instruction
+        run.save()
 

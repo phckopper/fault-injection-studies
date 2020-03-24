@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 click = "*"
 colored = "*"
+peewee = "*"
 
 [requires]
 python_version = "3.8"

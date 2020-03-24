@@ -1,8 +1,0 @@
-@94220376187344 %28 = fdiv double %27, 0x41DFFFFFFFC00000 | SDU: 28 Correct: 36 Hang: 0 Crash: 0 Percentage: 43.75%
-@94220376187584 %40 = fmul float %38, %39                | SDU: 23 Correct: 9 Hang: 0 Crash: 0 Percentage: 71.88%
-@94220376186592 %51 = fmul float %49, %50                | SDU: 23 Correct: 9 Hang: 0 Crash: 0 Percentage: 71.88%
-@94220376186704 %60 = fadd float %48, %59                | SDU: 9 Correct: 23 Hang: 0 Crash: 0 Percentage: 28.12%
-@94220376191552 %72 = add i32 %71, 1                     | SDU: 32 Correct: 0 Hang: 0 Crash: 0 Percentage: 100.00%
-@94220376192080 %82 = add i32 %81, 1                     | SDU: 31 Correct: 0 Hang: 1 Crash: 0 Percentage: 100.00%
-@94220376192704 %92 = fdiv double %91, 1.000000e+05      | SDU: 30 Correct: 34 Hang: 0 Crash: 0 Percentage: 46.88%
-@94220376192816 %101 = fmul double %100, 4.000000e+00    | SDU: 30 Correct: 34 Hang: 0 Crash: 0 Percentage: 46.88%

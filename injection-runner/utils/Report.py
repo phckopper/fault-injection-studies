@@ -29,7 +29,7 @@ class Report(object):
     golden -- golden output (string)
     """
     def add_golden(self, golden):
-        self._current_campaign.golden = str(golden)
+        self._current_campaign.golden = golden.decode("utf-8")
         self._current_campaign.save()
 
     """
@@ -45,6 +45,8 @@ class Report(object):
         self._current_instruction.address = address
         self._current_instruction.width   = width
         self._current_instruction.text    = text
+        self._current_instruction.save()
+        print(self._current_instruction.text)
 
 
     """
@@ -55,8 +57,8 @@ class Report(object):
     mask -- the mask that was injected
     retult -- final output of the program
     """
-    def add_run(self, mask, result="", hanged=False, crashed=False):
-        run = Run(mask=hex(mask), result=str(result), hanged=hanged, crashed=crashed)
+    def add_run(self, mask, result=b"", hanged=False, crashed=False):
+        run = Run(mask=hex(mask), result=result.decode("utf-8"), hanged=hanged, crashed=crashed)
         run.campaign = self._current_campaign
         run.instruction = self._current_instruction
         run.save()

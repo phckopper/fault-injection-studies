@@ -1,198 +1,199 @@
 ; ModuleID = 'main.c'
-source_filename = "main.c"
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
-target triple = "x86_64-pc-linux-gnu"
+target triple = "x86_64-unknown-linux-gnu"
 
 @.str = private unnamed_addr constant [6 x i8] c"%.5f\0A\00", align 1
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local void @do_math() #0 {
+; Function Attrs: nounwind uwtable
+define void @do_math() #0 {
   %1 = call i64 @_shouldInject()
   %2 = call i64 @_getInjectionMask()
   %3 = trunc i64 %2 to i32
-  %4 = alloca [10 x double], align 16
-  %5 = alloca i32, align 4
-  %6 = alloca i32, align 4
-  %7 = alloca double, align 8
-  %8 = alloca double, align 8
-  %9 = alloca double, align 8
-  store i32 0, i32* %5, align 4
-  store i32 0, i32* %6, align 4
-  br label %10
+  %abc = alloca [10 x double], align 16
+  %inside = alloca i32, align 4
+  %i = alloca i32, align 4
+  %x = alloca float, align 4
+  %y = alloca float, align 4
+  %pi = alloca double, align 8
+  store i32 0, i32* %inside, align 4
+  store i32 0, i32* %i, align 4
+  br label %4
 
-10:                                               ; preds = %85, %0
-  %11 = load i32, i32* %6, align 4
-  %12 = icmp ult i32 %11, 100000
-  br i1 %12, label %13, label %87
+; <label>:4                                       ; preds = %75, %0
+  %5 = load i32* %i, align 4
+  %6 = icmp ult i32 %5, 100000
+  br i1 %6, label %7, label %76
 
-13:                                               ; preds = %10
-  %14 = call i32 @rand() #3
-  %15 = sitofp i32 %14 to double
-  %16 = fdiv double %15, 0x41DFFFFFFFC00000
-  %17 = icmp eq i64 94233741765728, %1
-  br i1 %17, label %18, label %22
+; <label>:7                                       ; preds = %4
+  %8 = call i32 @rand() #3
+  %9 = sitofp i32 %8 to double
+  %10 = fdiv double %9, 0x41DFFFFFFFC00000
+  %11 = icmp eq i64 77157072, %1
+  br i1 %11, label %12, label %16
 
-18:                                               ; preds = %13
-  %19 = bitcast double %16 to i64
-  %20 = xor i64 %19, %2
-  %21 = bitcast i64 %20 to double
-  br label %23
+; <label>:12                                      ; preds = %7
+  %13 = bitcast double %10 to i64
+  %14 = xor i64 %13, %2
+  %15 = bitcast i64 %14 to double
+  br label %17
 
-22:                                               ; preds = %13
-  br label %23
+; <label>:16                                      ; preds = %7
+  br label %17
 
-23:                                               ; preds = %22, %18
-  %24 = phi double [ %21, %18 ], [ %16, %22 ]
-  store double %24, double* %7, align 8
-  %25 = call i32 @rand() #3
-  %26 = sitofp i32 %25 to double
-  %27 = fdiv double %26, 0x41DFFFFFFFC00000
-  %28 = icmp eq i64 94233742045632, %1
-  br i1 %28, label %29, label %33
+; <label>:17                                      ; preds = %16, %12
+  %injection = phi double [ %15, %12 ], [ %10, %16 ]
+  %18 = fptrunc double %injection to float
+  store float %18, float* %x, align 4
+  %19 = call i32 @rand() #3
+  %20 = sitofp i32 %19 to double
+  %21 = fdiv double %20, 0x41DFFFFFFFC00000
+  %22 = icmp eq i64 77156704, %1
+  br i1 %22, label %23, label %27
 
-29:                                               ; preds = %23
-  %30 = bitcast double %27 to i64
-  %31 = xor i64 %30, %2
-  %32 = bitcast i64 %31 to double
-  br label %34
+; <label>:23                                      ; preds = %17
+  %24 = bitcast double %21 to i64
+  %25 = xor i64 %24, %2
+  %26 = bitcast i64 %25 to double
+  br label %28
 
-33:                                               ; preds = %23
-  br label %34
+; <label>:27                                      ; preds = %17
+  br label %28
 
-34:                                               ; preds = %33, %29
-  %35 = phi double [ %32, %29 ], [ %27, %33 ]
-  store double %35, double* %8, align 8
-  %36 = load double, double* %7, align 8
-  %37 = load double, double* %7, align 8
-  %38 = fmul double %36, %37
-  %39 = icmp eq i64 94233742045872, %1
-  br i1 %39, label %40, label %44
+; <label>:28                                      ; preds = %27, %23
+  %injection1 = phi double [ %26, %23 ], [ %21, %27 ]
+  %29 = fptrunc double %injection1 to float
+  store float %29, float* %y, align 4
+  %30 = load float* %x, align 4
+  %31 = load float* %x, align 4
+  %32 = fmul float %30, %31
+  %33 = icmp eq i64 77160384, %1
+  br i1 %33, label %34, label %38
 
-40:                                               ; preds = %34
-  %41 = bitcast double %38 to i64
-  %42 = xor i64 %41, %2
-  %43 = bitcast i64 %42 to double
-  br label %45
+; <label>:34                                      ; preds = %28
+  %35 = bitcast float %32 to i32
+  %36 = xor i32 %35, %3
+  %37 = bitcast i32 %36 to float
+  br label %39
 
-44:                                               ; preds = %34
-  br label %45
+; <label>:38                                      ; preds = %28
+  br label %39
 
-45:                                               ; preds = %44, %40
-  %46 = phi double [ %43, %40 ], [ %38, %44 ]
-  %47 = load double, double* %8, align 8
-  %48 = load double, double* %8, align 8
-  %49 = fmul double %47, %48
-  %50 = icmp eq i64 94233742044880, %1
-  br i1 %50, label %51, label %55
+; <label>:39                                      ; preds = %38, %34
+  %injection2 = phi float [ %37, %34 ], [ %32, %38 ]
+  %40 = load float* %y, align 4
+  %41 = load float* %y, align 4
+  %42 = fmul float %40, %41
+  %43 = icmp eq i64 77160752, %1
+  br i1 %43, label %44, label %48
 
-51:                                               ; preds = %45
-  %52 = bitcast double %49 to i64
-  %53 = xor i64 %52, %2
-  %54 = bitcast i64 %53 to double
-  br label %56
+; <label>:44                                      ; preds = %39
+  %45 = bitcast float %42 to i32
+  %46 = xor i32 %45, %3
+  %47 = bitcast i32 %46 to float
+  br label %49
 
-55:                                               ; preds = %45
-  br label %56
+; <label>:48                                      ; preds = %39
+  br label %49
 
-56:                                               ; preds = %55, %51
-  %57 = phi double [ %54, %51 ], [ %49, %55 ]
-  %58 = fadd double %46, %57
-  %59 = icmp eq i64 94233742044992, %1
-  br i1 %59, label %60, label %64
+; <label>:49                                      ; preds = %48, %44
+  %injection3 = phi float [ %47, %44 ], [ %42, %48 ]
+  %50 = fadd float %injection2, %injection3
+  %51 = icmp eq i64 77160896, %1
+  br i1 %51, label %52, label %56
 
-60:                                               ; preds = %56
-  %61 = bitcast double %58 to i64
-  %62 = xor i64 %61, %2
-  %63 = bitcast i64 %62 to double
-  br label %65
+; <label>:52                                      ; preds = %49
+  %53 = bitcast float %50 to i32
+  %54 = xor i32 %53, %3
+  %55 = bitcast i32 %54 to float
+  br label %57
 
-64:                                               ; preds = %56
-  br label %65
+; <label>:56                                      ; preds = %49
+  br label %57
 
-65:                                               ; preds = %64, %60
-  %66 = phi double [ %63, %60 ], [ %58, %64 ]
-  %67 = fcmp ole double %66, 1.000000e+00
-  br i1 %67, label %68, label %77
+; <label>:57                                      ; preds = %56, %52
+  %injection4 = phi float [ %55, %52 ], [ %50, %56 ]
+  %58 = fcmp ole float %injection4, 1.000000e+00
+  br i1 %58, label %59, label %67
 
-68:                                               ; preds = %65
-  %69 = load i32, i32* %5, align 4
+; <label>:59                                      ; preds = %57
+  %60 = load i32* %inside, align 4
+  %61 = add i32 %60, 1
+  %62 = icmp eq i64 77161536, %1
+  br i1 %62, label %63, label %65
+
+; <label>:63                                      ; preds = %59
+  %64 = xor i32 %61, %3
+  br label %66
+
+; <label>:65                                      ; preds = %59
+  br label %66
+
+; <label>:66                                      ; preds = %65, %63
+  %injection5 = phi i32 [ %64, %63 ], [ %61, %65 ]
+  store i32 %injection5, i32* %inside, align 4
+  br label %67
+
+; <label>:67                                      ; preds = %66, %57
+  br label %68
+
+; <label>:68                                      ; preds = %67
+  %69 = load i32* %i, align 4
   %70 = add i32 %69, 1
-  %71 = icmp eq i64 94233742049648, %1
+  %71 = icmp eq i64 77162160, %1
   br i1 %71, label %72, label %74
 
-72:                                               ; preds = %68
+; <label>:72                                      ; preds = %68
   %73 = xor i32 %70, %3
   br label %75
 
-74:                                               ; preds = %68
+; <label>:74                                      ; preds = %68
   br label %75
 
-75:                                               ; preds = %74, %72
-  %76 = phi i32 [ %73, %72 ], [ %70, %74 ]
-  store i32 %76, i32* %5, align 4
-  br label %77
+; <label>:75                                      ; preds = %74, %72
+  %injection6 = phi i32 [ %73, %72 ], [ %70, %74 ]
+  store i32 %injection6, i32* %i, align 4
+  br label %4
 
-77:                                               ; preds = %75, %65
-  br label %78
+; <label>:76                                      ; preds = %4
+  %77 = load i32* %inside, align 4
+  %78 = uitofp i32 %77 to double
+  %79 = fdiv double %78, 1.000000e+05
+  %80 = icmp eq i64 77162976, %1
+  br i1 %80, label %81, label %85
 
-78:                                               ; preds = %77
-  %79 = load i32, i32* %6, align 4
-  %80 = add i32 %79, 1
-  %81 = icmp eq i64 94233742050176, %1
-  br i1 %81, label %82, label %84
+; <label>:81                                      ; preds = %76
+  %82 = bitcast double %79 to i64
+  %83 = xor i64 %82, %2
+  %84 = bitcast i64 %83 to double
+  br label %86
 
-82:                                               ; preds = %78
-  %83 = xor i32 %80, %3
-  br label %85
+; <label>:85                                      ; preds = %76
+  br label %86
 
-84:                                               ; preds = %78
-  br label %85
+; <label>:86                                      ; preds = %85, %81
+  %injection7 = phi double [ %84, %81 ], [ %79, %85 ]
+  %87 = fmul double %injection7, 4.000000e+00
+  %88 = icmp eq i64 77163280, %1
+  br i1 %88, label %89, label %93
 
-85:                                               ; preds = %84, %82
-  %86 = phi i32 [ %83, %82 ], [ %80, %84 ]
-  store i32 %86, i32* %6, align 4
-  br label %10
+; <label>:89                                      ; preds = %86
+  %90 = bitcast double %87 to i64
+  %91 = xor i64 %90, %2
+  %92 = bitcast i64 %91 to double
+  br label %94
 
-87:                                               ; preds = %10
-  %88 = load i32, i32* %5, align 4
-  %89 = uitofp i32 %88 to double
-  %90 = fdiv double %89, 1.000000e+05
-  %91 = icmp eq i64 94233742050800, %1
-  br i1 %91, label %92, label %96
+; <label>:93                                      ; preds = %86
+  br label %94
 
-92:                                               ; preds = %87
-  %93 = bitcast double %90 to i64
-  %94 = xor i64 %93, %2
-  %95 = bitcast i64 %94 to double
-  br label %97
-
-96:                                               ; preds = %87
-  br label %97
-
-97:                                               ; preds = %96, %92
-  %98 = phi double [ %95, %92 ], [ %90, %96 ]
-  %99 = fmul double %98, 4.000000e+00
-  %100 = icmp eq i64 94233742050912, %1
-  br i1 %100, label %101, label %105
-
-101:                                              ; preds = %97
-  %102 = bitcast double %99 to i64
-  %103 = xor i64 %102, %2
-  %104 = bitcast i64 %103 to double
-  br label %106
-
-105:                                              ; preds = %97
-  br label %106
-
-106:                                              ; preds = %105, %101
-  %107 = phi double [ %104, %101 ], [ %99, %105 ]
-  store double %107, double* %9, align 8
-  %108 = load double, double* %9, align 8
-  %109 = getelementptr inbounds [10 x double], [10 x double]* %4, i64 0, i64 5
-  store double %108, double* %109, align 8
-  %110 = getelementptr inbounds [10 x double], [10 x double]* %4, i64 0, i64 5
-  %111 = load double, double* %110, align 8
-  %112 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str, i64 0, i64 0), double %111)
+; <label>:94                                      ; preds = %93, %89
+  %injection8 = phi double [ %92, %89 ], [ %87, %93 ]
+  store double %injection8, double* %pi, align 8
+  %95 = load double* %pi, align 8
+  %96 = getelementptr inbounds [10 x double]* %abc, i32 0, i64 5
+  store double %95, double* %96, align 8
+  %97 = getelementptr inbounds [10 x double]* %abc, i32 0, i64 5
+  %98 = load double* %97, align 8
+  %99 = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([6 x i8]* @.str, i32 0, i32 0), double %98)
   ret void
 }
 
@@ -201,10 +202,10 @@ declare i32 @rand() #1
 
 declare i32 @printf(i8*, ...) #2
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local i32 @main() #0 {
+; Function Attrs: nounwind uwtable
+define i32 @main() #0 {
   %1 = alloca i32, align 4
-  store i32 0, i32* %1, align 4
+  store i32 0, i32* %1
   call void @srand(i32 992403954) #3
   call void @do_math()
   ret i32 0
@@ -217,15 +218,11 @@ declare i64 @_shouldInject()
 
 declare i64 @_getInjectionMask()
 
-attributes #0 = { noinline nounwind optnone sspstrong uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #1 = { nounwind "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
-attributes #2 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #0 = { nounwind uwtable "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { nounwind "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "unsafe-fp-math"="false" "use-soft-float"="false" }
 attributes #3 = { nounwind }
 
-!llvm.module.flags = !{!0, !1, !2}
-!llvm.ident = !{!3}
+!llvm.ident = !{!0}
 
-!0 = !{i32 1, !"wchar_size", i32 4}
-!1 = !{i32 7, !"PIC Level", i32 2}
-!2 = !{i32 7, !"PIE Level", i32 2}
-!3 = !{!"clang version 9.0.1 "}
+!0 = metadata !{metadata !"clang version 3.5.0 (tags/RELEASE_350/final)"}

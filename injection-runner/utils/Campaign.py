@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 from time import time
 from colored import attr, fg, stylize
 from utils.AddressMap import AddressMap
@@ -28,28 +29,31 @@ class Campaign(object):
 
         print(stylize("Getting golden output...", fg("yellow")))
         _start_time = time()
-        golden = self._executable.run_golden()
-        golden_time = (time() - _start_time) * self._tolerance
-        print(golden, golden_time)
-        self._report.add_golden(golden)
+        self.golden = self._executable.run_golden()
+        self.golden_time = (time() - _start_time) * self._tolerance
+        print(self.golden, self.golden_time)
+        self._report.add_golden(self.golden)
 
         print(stylize("Starting injection", fg("blue")))
 
-        for instr in self._map:
-            print(fg("white"), attr("bold"), "Injecting:\t", instr.text, attr("reset"))
-            self._report.add_and_start_instruction(instr.address, instr.width, instr.text)
-            for i in range(instr.width):
-                mask = self._get_bit_mask(i)
-                try:
-                    result = self._executable.run_injection(instr.address, mask, golden_time)
-                    print("Mask: ", hex(mask), "\t", result)
-                    self._report.add_run(mask, result=result)
-                except ExecutionHanged:
-                    print("Mask: ", hex(mask), fg("red"), "HANGED", attr("reset"))
-                    self._report.add_run(mask, hanged=True)
-                except ExecutionCrashed:
-                    print("Mask: ", hex(mask), fg("red"), "CRASHED", attr("reset"))
-                    self._report.add_run(mask, crashed=True)
+        with Pool(processes=4) as pool:
+            pool.map(self._inject_instruction, self._map)
+
+    def _inject_instruction(self, instr):
+        print(fg("white"), attr("bold"), "Injecting:\t", instr.text, attr("reset"))
+        self._report.add_and_start_instruction(instr.address, instr.width, instr.text)
+        for i in range(instr.width):
+            mask = self._get_bit_mask(i)
+            try:
+                result = self._executable.run_injection(instr.address, mask, self.golden_time)
+                print("Mask: ", hex(mask), "\t", result)
+                self._report.add_run(mask, result=result)
+            except ExecutionHanged:
+                print("Mask: ", hex(mask), fg("red"), "HANGED", attr("reset"))
+                self._report.add_run(mask, hanged=True)
+            except ExecutionCrashed:
+                print("Mask: ", hex(mask), fg("red"), "CRASHED", attr("reset"))
+                self._report.add_run(mask, crashed=True)
 
     def _get_bit_mask(self, i):
         return (1 << i)

@@ -15,12 +15,14 @@ class Campaign(object):
     pathToExecutable -- path to the (instrumented) executable to be analyzed
     pathToMap -- path to instruction address .map file
     timeoutTolerance -- how many times slower should the run be to be considered a hang
+    threads -- how many threads to include in pool
     """
-    def __init__(self, pathToExecutable, pathToMap, timeoutTolerance=5):
-        self._executable = Executable(pathToExecutable)
+    def __init__(self, pathToExecutable, pathToMap, timeoutTolerance=5, threads=4, args=[]):
+        self._executable = Executable(pathToExecutable, args)
         self._map = AddressMap(pathToMap)
         self._report = Report("report.log")
         self._tolerance = timeoutTolerance
+        self._threads = threads
 
     """Runs the campaign, printing the results to stdout"""
     def run(self):
@@ -36,7 +38,7 @@ class Campaign(object):
 
         print(stylize("Starting injection", fg("blue")))
 
-        with Pool(processes=4) as pool:
+        with Pool(processes=self._threads) as pool:
             pool.map(self._inject_instruction, self._map)
 
     def _inject_instruction(self, instr):

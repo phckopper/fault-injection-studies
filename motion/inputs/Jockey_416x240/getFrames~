@@ -1,0 +1,43 @@
+import numpy as np
+
+videoFile = open("Jockey_416x240_120fps_420_8bit_600.yuv", "rb")
+
+for i in range(1, 301):
+	frame = np.fromfile(videoFile, dtype=np.uint8, count=416*240).tolist()
+	file = open("frame" + str(i) + ".yuv", "wb")
+	np.asarray(frame, dtype=np.uint8).tofile(file)	
+	file.close()
+	videoFile.seek(416*240/2,1)
+
+
+#videoFile.seek(416*240/2,1)
+#current = np.fromfile(videoFile, dtype=np.uint8, count=416*240).tolist()
+
+
+
+#referenceFile = open("reference.yuv", "rb")
+#reference = np.fromfile(referenceFile, dtype=np.uint8).tolist()
+
+#referenceFile.close()
+#print len(reference)
+
+
+#currentFile = open("current.yuv", "rb")
+#current = np.fromfile(currentFile, dtype=np.uint8).tolist()
+
+#currentFile.close()
+#print len(current)
+
+#mse = np.mean(np.power(np.array(reference) - np.array(current), 2), dtype=np.float64)
+#print mse
+
+#PIXEL_MAX = 255
+#psnr = 20 * np.log10(PIXEL_MAX / np.sqrt(mse))
+#print psnr
+
+
+#arq2 = open("test.yuv", "wb")
+#np.asarray(lista, dtype=np.uint8).tofile(arq2)	
+#arq2.close()
+
+

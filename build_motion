@@ -1,0 +1,10 @@
+#!/bin/sh
+cd motion
+clang -Xclang -load -Xclang ../fault-instrumentation-pass/build/instrumenting/libInstrumentingPass.* -O0 -c encoder.c
+cc -c lib/populateIOEncoder.c
+cc -c ../examples/injectionManager.c
+cc injectionManager.o  populateIOEncoder.o encoder.o
+echo "----------------------------"
+echo "running..."
+echo "----------------------------"
+./a.out inputs/Jockey_416x240/frame1.yuv outputs/frame1-2.vec outputs/frame2rec.yuv

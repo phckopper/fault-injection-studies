@@ -51,20 +51,11 @@ namespace {
             SplitBlockAndInsertIfThenElse(cmp, nextInst, &ThenTerm, &ElseTerm, nullptr);
             builder.SetInsertPoint(ThenTerm);
             Value* error;
-            if(thisInst->getType()->getPrimitiveSizeInBits() == 64) {
-                Value* tmp  = builder.CreateBitCast(thisInst, Type::getInt64Ty(thisInst->getContext()));
-                Value* tmp2 = builder.CreateXor(tmp, mask);
-                error = builder.CreateBitCast(tmp2, thisInst->getType());
-                errs() << "lossless to 64 \n";
-            } else if(thisInst->getType()->getPrimitiveSizeInBits() == 32) {
-                Value* tmp  = builder.CreateBitCast(thisInst, Type::getInt32Ty(thisInst->getContext()));
-                Value* tmp2 = builder.CreateXor(tmp, smallMask);
-                error = builder.CreateBitCast(tmp2, thisInst->getType());
-                errs() << "lossless to 32 \n";
-            } else {
-                error = builder.CreateXor(thisInst, mask);
-                errs() << "oh shit help \n";
-            }
+            unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
+            if(thisInst->getType()->isPointerTy()) size = 64;
+            Value* tmp  = builder.CreateBitCast(thisInst, Type::getIntNTy(thisInst->getContext(), size));
+            Value* tmp2 = builder.CreateXor(tmp, mask);
+            error = builder.CreateBitCast(tmp2, thisInst->getType());
 
             builder.SetInsertPoint(nextInst);
 
@@ -99,7 +90,7 @@ namespace {
 
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
-        if(I->isBinaryOp())
+        if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
             toInject.push_back(&*I);
         //}
       }

@@ -47,7 +47,11 @@ namespace {
             IRBuilder<> builder(nextInst);
 
             Value* cmp = builder.CreateICmpEQ(constAddress, addrToInject);
-            TerminatorInst *ThenTerm , *ElseTerm;
+            #if __clang_major__ <= 3 
+                TerminatorInst *ThenTerm, *ElseTerm;
+            #else
+                Instruction *ThenTerm, *ElseTerm;
+            #endif
             SplitBlockAndInsertIfThenElse(cmp, nextInst, &ThenTerm, &ElseTerm, nullptr);
             builder.SetInsertPoint(ThenTerm);
             Value* error;
@@ -72,12 +76,21 @@ namespace {
           return false;
 
       LLVMContext& Ctx = F.getContext();
-      Constant *shouldInject = F.getParent()->getOrInsertFunction(
-        "_shouldInject", Type::getInt64Ty(Ctx), NULL
-      );
-      Constant *getInjectionMask = F.getParent()->getOrInsertFunction(
-        "_getInjectionMask", Type::getInt64Ty(Ctx), NULL
-      );
+      #if __clang_major__ <= 3 
+          Constant *shouldInject = F.getParent()->getOrInsertFunction(
+            "_shouldInject", Type::getInt64Ty(Ctx), NULL
+          );
+          Constant *getInjectionMask = F.getParent()->getOrInsertFunction(
+            "_getInjectionMask", Type::getInt64Ty(Ctx), NULL
+          );
+      #else
+          FunctionCallee shouldInject = F.getParent()->getOrInsertFunction(
+            "_shouldInject", Type::getInt64Ty(Ctx)
+          );
+          FunctionCallee getInjectionMask = F.getParent()->getOrInsertFunction(
+            "_getInjectionMask", Type::getInt64Ty(Ctx)
+          );
+      #endif
         
 
       errs() << "Injecting function " << F.getName() << "!\n";
@@ -95,8 +108,13 @@ namespace {
         //}
       }
 
-      std::string errorCode; 
-      raw_fd_ostream address_map("address.map", errorCode, sys::fs::F_Append);
+      #if __clang_major__ <= 3 
+          std::string errorCode; 
+          raw_fd_ostream address_map("address.map", errorCode, sys::fs::F_Append);
+      #else
+          std::error_code errorCode; 
+          raw_fd_ostream address_map("address.map", errorCode);
+      #endif
 
       for(Instruction *I: toInject) {
         std::uintptr_t address = reinterpret_cast<std::uintptr_t>(I);

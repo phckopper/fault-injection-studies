@@ -20,6 +20,7 @@ class Report(object):
     """
     def start_campaign(self, params=""):
         self._current_campaign = Campaign(params=params)
+        return self._current_campaign
 
     """
     Adds golden output to report.
@@ -33,21 +34,20 @@ class Report(object):
         self._current_campaign.save()
 
     """
-    Adds a new instruction and starts adding subsequent runs to it
+    Adds a new instruction to the database
 
     Arguments:
     address -- address of the instruction (int)
     width -- bit width of it's value (int)
     text -- textual IR representation (string)
     """
-    def add_and_start_instruction(self, address, width, text):
-        self._current_instruction = Instruction()
-        self._current_instruction.address = address
-        self._current_instruction.width   = width
-        self._current_instruction.text    = text
-        self._current_instruction.save()
-        print(self._current_instruction.text)
-
+    def add_instruction(self, address, width, text):
+        instruction = Instruction()
+        instruction.address = address
+        instruction.width   = width
+        instruction.text    = text
+        instruction.save()
+        return instruction
 
     """
     Adds a run to the report.
@@ -57,9 +57,6 @@ class Report(object):
     mask -- the mask that was injected
     retult -- final output of the program
     """
-    def add_run(self, mask, result=b"", hanged=False, crashed=False):
-        run = Run(mask=hex(mask), result=result.decode("utf-8"), hanged=hanged, crashed=crashed)
-        run.campaign = self._current_campaign
-        run.instruction = self._current_instruction
-        run.save()
+    def add_runs(self, runs):
+        Run.insert_many(runs).execute()
 

@@ -13,12 +13,13 @@ class Executable(object):
     Arguments:
     pathToExecutable -- string path to executable
     """
-    def __init__(self, pathToExecutable):
+    def __init__(self, pathToExecutable, args):
         self._pathToExecutable = pathToExecutable
+        self.args = args
 
     """ Gets the executable golden output """
     def run_golden(self):
-        output = subprocess.run(self._pathToExecutable, capture_output=True)
+        output = subprocess.run([self._pathToExecutable]+self.args+["./outputs/golden.out"], stdout=subprocess.PIPE)
         return output.stdout
 
     """
@@ -32,7 +33,8 @@ class Executable(object):
     def run_injection(self, address, mask=1, timeout=0):
         env = dict(INJECTION_ADDR=str(address), INJECTION_MASK=str(mask))
         try:
-            output = subprocess.run(self._pathToExecutable, capture_output=True, env=env, timeout=timeout, check=True)
+            output = subprocess.run([self._pathToExecutable]+self.args+[self._get_output_file(address, mask)], 
+                                    stdout=subprocess.PIPE, env=env, timeout=timeout, check=True)
             return output.stdout
         except subprocess.TimeoutExpired as e:
             raise ExecutionHanged
@@ -40,3 +42,7 @@ class Executable(object):
             if e.returncode < 0:
                 # TODO: differentiate between signals
                 raise ExecutionCrashed
+
+    def _get_output_file(self, address, mask):
+        return "./outputs/{}-{}.out".format(address, hex(mask))
+

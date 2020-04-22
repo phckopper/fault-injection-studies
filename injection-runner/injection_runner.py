@@ -11,8 +11,10 @@ def cli():
 @click.argument('executable')
 @click.argument('address_map')
 @click.option('--tolerance', default=5, help='how many times slower should a run be to be a hang')
-def run_campaign(executable, address_map, tolerance):
-    c = Campaign(executable, address_map, tolerance)
+@click.option('--threads', default=4, help='how many threads should be used')
+@click.option('--args', multiple=True, help='args to provide to executable')
+def run_campaign(executable, address_map, tolerance, threads, args):
+    c = Campaign(executable, address_map, tolerance, threads, list(args))
     c.run()
 
 if __name__ == '__main__':

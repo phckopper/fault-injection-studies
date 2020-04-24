@@ -39,19 +39,21 @@ namespace {
         }
     }
 
-    void injectInstruction(Instruction *thisInst, std::uintptr_t address, Value *addrToInject, Value *mask64, Value *mask32, Value *mask1) {
-            errs() << "Injecting at address " << address << ": ";
+    void injectInstruction(Instruction *thisInst, Value *cntToInject, AllocaInst *counterPtr, Value *mask64, Value *mask32, Value *mask1) {
             errs() << *thisInst << "\n";
 
             unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
+            if(thisInst->getType()->isPointerTy()) size = 64;
             if(size == 8)
                 return;
             Instruction *nextInst = thisInst->getNextNode();
-            auto constAddress = ConstantInt::get(Type::getInt64Ty(thisInst->getContext()), address, false);
 
             IRBuilder<> builder(nextInst);
+            Value* counter = builder.CreateLoad(counterPtr);
+            Value* counterInc = builder.CreateAdd(counter, builder.getInt64(1));
+            builder.CreateStore(counterInc, counterPtr);
 
-            Value* cmp = builder.CreateICmpEQ(constAddress, addrToInject);
+            Value* cmp = builder.CreateICmpEQ(counter, cntToInject);
             #if __clang_major__ <= 3 
                 TerminatorInst *ThenTerm, *ElseTerm;
             #else
@@ -60,7 +62,6 @@ namespace {
             SplitBlockAndInsertIfThenElse(cmp, nextInst, &ThenTerm, &ElseTerm, nullptr);
             builder.SetInsertPoint(ThenTerm);
             Value* error;
-            if(thisInst->getType()->isPointerTy()) size = 64;
             Value* tmp;
             
             if(thisInst->getType()->isPointerTy())
@@ -87,7 +88,6 @@ namespace {
 
             replaceUsesOutsideBlock(thisInst, phi, ThenTerm->getParent());
             phi->addIncoming(thisInst, ElseTerm->getParent());
-
     }
 
     virtual bool runOnFunction(Function &F) {
@@ -101,6 +101,9 @@ namespace {
           );
           Constant *getInjectionMask = F.getParent()->getOrInsertFunction(
             "_getInjectionMask", Type::getInt64Ty(Ctx), NULL
+          );
+          Constant *printCounter = F.getParent()->getOrInsertFunction(
+            "_printCounter", Type::getVoidTy(Ctx), Type::getInt64PtrTy(Ctx), NULL
           );
       #else
           FunctionCallee shouldInject = F.getParent()->getOrInsertFunction(
@@ -116,15 +119,18 @@ namespace {
       std::vector<Instruction *> toInject;
 
       IRBuilder<> builder(F.getEntryBlock().getFirstNonPHIOrDbgOrLifetime());
+      AllocaInst *counterPtr = builder.CreateAlloca(Type::getInt64Ty(Ctx), nullptr, "counterptr");
       Value *addrToInject    = builder.CreateCall(shouldInject);
       Value *injectionMask   = builder.CreateCall(getInjectionMask);
       Value *smallMask       = builder.CreateTruncOrBitCast(injectionMask, Type::getInt32Ty(Ctx));
       Value *smallerMask     = builder.CreateTruncOrBitCast(injectionMask, Type::getInt1Ty(Ctx));
 
+      builder.CreateStore(builder.getInt64(0),counterPtr);
+
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
         if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
-            if(!isa<CallInst>(*I))
+            if(!isa<CallInst>(*I) && (&*I != counterPtr))
                 toInject.push_back(&*I);
         //}
       }
@@ -139,11 +145,14 @@ namespace {
 
       for(Instruction *I: toInject) {
         std::uintptr_t address = reinterpret_cast<std::uintptr_t>(I);
-        injectInstruction(I, address, addrToInject, injectionMask, smallMask, smallerMask);
+        injectInstruction(I, addrToInject, counterPtr, injectionMask, smallMask, smallerMask);
 
         address_map << address << "," << I->getType()->getPrimitiveSizeInBits() << "," << *I << "\n";
         // Modificamos a função
       }
+     
+      builder.SetInsertPoint(toInject.back());
+      builder.CreateCall(printCounter, counterPtr);
         
       return true;
     }

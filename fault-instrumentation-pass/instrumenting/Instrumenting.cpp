@@ -1,5 +1,7 @@
 #include <cstdint>
 
+#define __clang_major__ 9
+
 #include "llvm/Pass.h"
 //#include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/Function.h"
@@ -37,10 +39,13 @@ namespace {
         }
     }
 
-    void injectInstruction(Instruction *thisInst, std::uintptr_t address, Value *addrToInject, Value *mask, Value *smallMask) {
+    void injectInstruction(Instruction *thisInst, std::uintptr_t address, Value *addrToInject, Value *mask64, Value *mask32, Value *mask1) {
             errs() << "Injecting at address " << address << ": ";
             errs() << *thisInst << "\n";
 
+            unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
+            if(size == 8)
+                return;
             Instruction *nextInst = thisInst->getNextNode();
             auto constAddress = ConstantInt::get(Type::getInt64Ty(thisInst->getContext()), address, false);
 
@@ -55,11 +60,17 @@ namespace {
             SplitBlockAndInsertIfThenElse(cmp, nextInst, &ThenTerm, &ElseTerm, nullptr);
             builder.SetInsertPoint(ThenTerm);
             Value* error;
-            unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
             if(thisInst->getType()->isPointerTy()) size = 64;
             Value* tmp  = builder.CreateBitCast(thisInst, Type::getIntNTy(thisInst->getContext(), size));
-            Value* tmp2 = builder.CreateXor(tmp, mask);
-            error = builder.CreateBitCast(tmp2, thisInst->getType());
+            Value* tmp2;
+            if(size == 1)
+                tmp2 = builder.CreateXor(tmp, mask1);
+            if(size == 32)
+                tmp2 = builder.CreateXor(tmp, mask32);
+            if(size == 64)
+                tmp2 = builder.CreateXor(tmp, mask64);
+
+            error = builder.CreateBitOrPointerCast(tmp2, thisInst->getType());
 
             builder.SetInsertPoint(nextInst);
 
@@ -97,14 +108,16 @@ namespace {
       std::vector<Instruction *> toInject;
 
       IRBuilder<> builder(F.getEntryBlock().getFirstNonPHIOrDbgOrLifetime());
-      Value *addrToInject  = builder.CreateCall(shouldInject);
-      Value *injectionMask = builder.CreateCall(getInjectionMask);
-      Value *smallMask     = builder.CreateTruncOrBitCast(injectionMask, Type::getInt32Ty(Ctx));
+      Value *addrToInject    = builder.CreateCall(shouldInject);
+      Value *injectionMask   = builder.CreateCall(getInjectionMask);
+      Value *smallMask       = builder.CreateTruncOrBitCast(injectionMask, Type::getInt32Ty(Ctx));
+      Value *smallerMask     = builder.CreateTruncOrBitCast(injectionMask, Type::getInt1Ty(Ctx));
 
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
         if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
-            toInject.push_back(&*I);
+            if(!isa<CallInst>(*I))
+                toInject.push_back(&*I);
         //}
       }
 
@@ -118,7 +131,7 @@ namespace {
 
       for(Instruction *I: toInject) {
         std::uintptr_t address = reinterpret_cast<std::uintptr_t>(I);
-        injectInstruction(I, address, addrToInject, injectionMask, smallMask);
+        injectInstruction(I, address, addrToInject, injectionMask, smallMask, smallerMask);
 
         address_map << address << "," << I->getType()->getPrimitiveSizeInBits() << "," << *I << "\n";
         // Modificamos a função

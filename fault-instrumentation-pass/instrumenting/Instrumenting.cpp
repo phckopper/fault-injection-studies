@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#define __clang_major__ 9
+#define __clang_major__ 3
 
 #include "llvm/Pass.h"
 //#include "llvm/IR/DebugInfoMetadata.h"
@@ -61,7 +61,12 @@ namespace {
             builder.SetInsertPoint(ThenTerm);
             Value* error;
             if(thisInst->getType()->isPointerTy()) size = 64;
-            Value* tmp  = builder.CreateBitCast(thisInst, Type::getIntNTy(thisInst->getContext(), size));
+            Value* tmp;
+            
+            if(thisInst->getType()->isPointerTy())
+                tmp = builder.CreatePtrToInt(thisInst, Type::getIntNTy(thisInst->getContext(), size));
+            else
+                tmp = builder.CreateBitCast(thisInst, Type::getIntNTy(thisInst->getContext(), size));
             Value* tmp2;
             if(size == 1)
                 tmp2 = builder.CreateXor(tmp, mask1);
@@ -70,7 +75,10 @@ namespace {
             if(size == 64)
                 tmp2 = builder.CreateXor(tmp, mask64);
 
-            error = builder.CreateBitOrPointerCast(tmp2, thisInst->getType());
+            if(thisInst->getType()->isPointerTy())
+                error = builder.CreateIntToPtr(tmp2, thisInst->getType());
+            else
+                error = builder.CreateBitCast(tmp2, thisInst->getType());
 
             builder.SetInsertPoint(nextInst);
 

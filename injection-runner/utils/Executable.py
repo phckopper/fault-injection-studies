@@ -27,13 +27,12 @@ class Executable(object):
 
     Arguments:
     address -- address of the instruction to be injected (given by the .map file)
-    mask -- binary mask to be XORed with the original return value of the instruction
     timeout -- timeout for the executable
     """
-    def run_injection(self, address, mask=1, timeout=0):
-        env = dict(INJECTION_ADDR=str(address), INJECTION_MASK=str(mask))
+    def run_injection(self, address, timeout=0):
+        env = dict(INJECTION_ADDR=str(address))
         try:
-            output = subprocess.run([self._pathToExecutable]+self.args+[self._get_output_file(address, mask)], 
+            output = subprocess.run([self._pathToExecutable]+self.args+[self._get_output_file(address)], 
                                     stdout=subprocess.PIPE, env=env, timeout=timeout, check=True)
             return output.stdout
         except subprocess.TimeoutExpired as e:
@@ -43,6 +42,6 @@ class Executable(object):
                 # TODO: differentiate between signals
                 raise ExecutionCrashed
 
-    def _get_output_file(self, address, mask):
-        return "./outputs/{}-{}.out".format(address, hex(mask))
+    def _get_output_file(self, address):
+        return "./outputs/{}.out".format(address)
 

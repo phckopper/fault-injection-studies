@@ -10,7 +10,7 @@ class Report(object):
     """
     def __init__(self, location):
         database.connect()
-        database.create_tables([Campaign, Instruction, Run])
+        database.create_tables([Campaign, Run])
 
     """
     Starts a new campaign with a new set of parameters
@@ -51,12 +51,10 @@ class Report(object):
 
     """
     Adds a run to the report.
-    Stores every injected run  mask and result.
+    Stores every injected run
 
     Arguments:
-    mask -- the mask that was injected
-    retult -- final output of the program
     """
-    def add_runs(self, runs):
-        Run.insert_many(runs).execute()
+    def add_run(self, run):
+        Run.insert(run)
 

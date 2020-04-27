@@ -39,7 +39,7 @@ namespace {
         }
     }
 
-    void injectInstruction(Instruction *thisInst, Value *cntToInject, AllocaInst *counterPtr, Value *mask64, Value *mask32, Value *mask1) {
+    void injectInstruction(Instruction *thisInst, Value *cntToInject, AllocaInst *counterPtr, Constant *getInjectionMask) {
             errs() << *thisInst << "\n";
 
             unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
@@ -68,13 +68,8 @@ namespace {
                 tmp = builder.CreatePtrToInt(thisInst, Type::getIntNTy(thisInst->getContext(), size));
             else
                 tmp = builder.CreateBitCast(thisInst, Type::getIntNTy(thisInst->getContext(), size));
-            Value* tmp2;
-            if(size == 1)
-                tmp2 = builder.CreateXor(tmp, mask1);
-            if(size == 32)
-                tmp2 = builder.CreateXor(tmp, mask32);
-            if(size == 64)
-                tmp2 = builder.CreateXor(tmp, mask64);
+            Value* mask = builder.CreateCall(getInjectionMask, builder.getInt64(size));
+            Value* tmp2 = builder.CreateXor(tmp, mask);
 
             if(thisInst->getType()->isPointerTy())
                 error = builder.CreateIntToPtr(tmp2, thisInst->getType());
@@ -100,7 +95,7 @@ namespace {
             "_shouldInject", Type::getInt64Ty(Ctx), NULL
           );
           Constant *getInjectionMask = F.getParent()->getOrInsertFunction(
-            "_getInjectionMask", Type::getInt64Ty(Ctx), NULL
+            "_getInjectionMask", Type::getInt64Ty(Ctx), Type::getInt64Ty(Ctx), NULL
           );
           Constant *printCounter = F.getParent()->getOrInsertFunction(
             "_printCounter", Type::getVoidTy(Ctx), Type::getInt64PtrTy(Ctx), NULL
@@ -121,9 +116,6 @@ namespace {
       IRBuilder<> builder(F.getEntryBlock().getFirstNonPHIOrDbgOrLifetime());
       AllocaInst *counterPtr = builder.CreateAlloca(Type::getInt64Ty(Ctx), nullptr, "counterptr");
       Value *addrToInject    = builder.CreateCall(shouldInject);
-      Value *injectionMask   = builder.CreateCall(getInjectionMask);
-      Value *smallMask       = builder.CreateTruncOrBitCast(injectionMask, Type::getInt32Ty(Ctx));
-      Value *smallerMask     = builder.CreateTruncOrBitCast(injectionMask, Type::getInt1Ty(Ctx));
 
       builder.CreateStore(builder.getInt64(0),counterPtr);
 
@@ -145,7 +137,7 @@ namespace {
 
       for(Instruction *I: toInject) {
         std::uintptr_t address = reinterpret_cast<std::uintptr_t>(I);
-        injectInstruction(I, addrToInject, counterPtr, injectionMask, smallMask, smallerMask);
+        injectInstruction(I, addrToInject, counterPtr, getInjectionMask);
 
         address_map << address << "," << I->getType()->getPrimitiveSizeInBits() << "," << *I << "\n";
         // Modificamos a função

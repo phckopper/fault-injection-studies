@@ -4,7 +4,7 @@
 #include <math.h>
 
 #define SEED 992403954
-#define ITER 100000
+#define ITER 9999
 
 void do_math(void) {
     double abc[10];

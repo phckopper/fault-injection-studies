@@ -3,6 +3,7 @@
 #define __clang_major__ 3
 
 #include "llvm/Pass.h"
+#include "llvm/ADT/StringRef.h"
 //#include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Value.h"
@@ -16,12 +17,22 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/CommandLine.h"
+
 using namespace llvm;
+
+static cl::opt<int> startOpt("start", cl::desc("First instruction to instrument"));
+static cl::opt<int> stopOpt("stop", cl::desc("Last instruction to instrument"));
 
 namespace {
   struct InstrumentingPass : public FunctionPass {
     static char ID;
     InstrumentingPass() : FunctionPass(ID) {}
+    
+
+    StringRef getPassName(void) {
+        return StringRef("InstrumentingPass");
+    }
 
     bool ShouldReplace(Use &U, BasicBlock *BB) {
         auto *I = dyn_cast<Instruction>(U.getUser());
@@ -39,14 +50,25 @@ namespace {
         }
     }
 
+    Instruction* selectInsertionPoint(Instruction *I) {
+        Instruction* i = I->getNextNode();
+        while(isa<PHINode>(i)) {
+            errs() << "found phi node " << *i << "\n";
+            i = i->getNextNode();
+        }
+        return i;
+    }
+
     void injectInstruction(Instruction *thisInst, Value *cntToInject, AllocaInst *counterPtr, Constant *getInjectionMask) {
             errs() << *thisInst << "\n";
 
             unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
             if(thisInst->getType()->isPointerTy()) size = 64;
-            if(size == 8)
+            Instruction *nextInst = selectInsertionPoint(thisInst);
+            if(nextInst == nullptr) {
+                errs() << "FAILED!\n";
                 return;
-            Instruction *nextInst = thisInst->getNextNode();
+            }
 
             IRBuilder<> builder(nextInst);
             Value* counter = builder.CreateLoad(counterPtr);
@@ -68,13 +90,14 @@ namespace {
                 tmp = builder.CreatePtrToInt(thisInst, Type::getIntNTy(thisInst->getContext(), size));
             else
                 tmp = builder.CreateBitCast(thisInst, Type::getIntNTy(thisInst->getContext(), size));
-            Value* mask = builder.CreateCall(getInjectionMask, builder.getInt64(size));
-            Value* tmp2 = builder.CreateXor(tmp, mask);
+            Value* mask  = builder.CreateCall(getInjectionMask, builder.getInt64(size));
+            Value* maskT = builder.CreateTrunc(mask, Type::getIntNTy(thisInst->getContext(), size));
+            Value* tmp2  = builder.CreateXor(tmp, maskT);
 
             if(thisInst->getType()->isPointerTy())
-                error = builder.CreateIntToPtr(tmp2, thisInst->getType());
+                error = builder.CreateIntToPtr(tmp2, thisInst->getType(), "erroneous");
             else
-                error = builder.CreateBitCast(tmp2, thisInst->getType());
+                error = builder.CreateBitCast(tmp2, thisInst->getType(), "erroneous");
 
             builder.SetInsertPoint(nextInst);
 
@@ -86,8 +109,6 @@ namespace {
     }
 
     virtual bool runOnFunction(Function &F) {
-      if(F.getName() == "main")
-          return false;
 
       LLVMContext& Ctx = F.getContext();
       #if __clang_major__ <= 3 
@@ -119,11 +140,16 @@ namespace {
 
       builder.CreateStore(builder.getInt64(0),counterPtr);
 
+      uint64_t instrCount = 0;
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
         if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
-            if(!isa<CallInst>(*I) && (&*I != counterPtr))
-                toInject.push_back(&*I);
+            if(!isa<CallInst>(*I) && (&*I != counterPtr)) {
+                instrCount++;
+                errs() << "Instr " << instrCount << " " << *I << "\n";
+                if(instrCount >= startOpt && instrCount < stopOpt)
+                    toInject.push_back(&*I);
+            }
         //}
       }
 
@@ -152,6 +178,9 @@ namespace {
 }
 
 char InstrumentingPass::ID = 0;
+static RegisterPass<InstrumentingPass> X("instrumenting", "Fault Instrumenting Pass",
+                             false /* Only looks at CFG */,
+                             false /* Analysis Pass */);
 
 // Automatically enable the pass.
 // http://adriansampson.net/blog/clangpass.html

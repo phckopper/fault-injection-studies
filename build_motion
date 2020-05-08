@@ -1,6 +1,6 @@
 #!/bin/sh
 cd motion
-clang -Xclang -load -Xclang ../fault-instrumentation-pass/build/instrumenting/libInstrumentingPass.* -O0 -c encoder.c
+clang -Xclang -load -Xclang ../fault-instrumentation-pass/build/instrumenting/libInstrumentingPass.so  -mllvm -start=40 -mllvm -stop=90 -O0 -c encoder.c
 cc -c lib/populateIOEncoder.c
 cc -c ../examples/injectionManager.c
 cc injectionManager.o  populateIOEncoder.o encoder.o

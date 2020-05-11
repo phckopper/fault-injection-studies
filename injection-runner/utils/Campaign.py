@@ -17,7 +17,7 @@ class Campaign(object):
     timeoutTolerance -- how many times slower should the run be to be considered a hang
     threads -- how many threads to include in pool
     """
-    def __init__(self, pathToExecutable, nInstructions, timeoutTolerance=5, threads=4, args=[], nSamples=300):
+    def __init__(self, pathToExecutable, nInstructions, timeoutTolerance=5, threads=2, args=[], nSamples=384):
         self._executable = Executable(pathToExecutable, args)
         self._report = Report("report.log")
         self._nInstructions = nInstructions

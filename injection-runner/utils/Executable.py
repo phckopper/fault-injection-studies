@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 class ExecutionHanged(Exception):
     pass
@@ -19,7 +20,8 @@ class Executable(object):
 
     """ Gets the executable golden output """
     def run_golden(self):
-        output = subprocess.run([self._pathToExecutable]+self.args+["./outputs/golden.out"], stdout=subprocess.PIPE)
+        env = dict(INJECTION_ADDR=str(sys.maxsize))
+        output = subprocess.run([self._pathToExecutable]+self.args+["./outputs/golden.out"], stdout=subprocess.PIPE, env=env)
         return output.stdout
 
     """

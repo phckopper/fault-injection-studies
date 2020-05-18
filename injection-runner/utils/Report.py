@@ -56,5 +56,4 @@ class Report(object):
     Arguments:
     """
     def add_run(self, run):
-        Run.insert(run)
-
+        Run.insert(run).execute()

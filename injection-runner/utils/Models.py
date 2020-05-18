@@ -1,4 +1,6 @@
 from peewee import *
+from playhouse.sqliteq import SqliteQueueDatabase
+import atexit
 
 database = SqliteDatabase("report.db")
 
@@ -16,9 +18,7 @@ class Instruction(Model):
         database = database
 
 class Run(Model):
-    instruction = ForeignKeyField(Instruction, backref='runs')
     campaign    = ForeignKeyField(Campaign, backref='runs')
-    mask        = CharField(20)
     result      = TextField()
     hanged      = BooleanField()
     crashed     = BooleanField()

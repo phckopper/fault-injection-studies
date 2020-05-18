@@ -59,7 +59,7 @@ namespace {
         return i;
     }
 
-    void injectInstruction(Instruction *thisInst, Value *cntToInject, AllocaInst *counterPtr, Constant *getInjectionMask) {
+    void injectInstruction(Instruction *thisInst, Value *cntToInject, Constant *counterPtr, Constant *getInjectionMask) {
             errs() << *thisInst << "\n";
 
             unsigned int size = thisInst->getType()->getPrimitiveSizeInBits();
@@ -72,10 +72,12 @@ namespace {
 
             IRBuilder<> builder(nextInst);
             Value* counter = builder.CreateLoad(counterPtr);
-            Value* counterInc = builder.CreateAdd(counter, builder.getInt64(1));
+            Value* counterInc = builder.CreateAdd(counter, builder.getInt64(size));
             builder.CreateStore(counterInc, counterPtr);
 
-            Value* cmp = builder.CreateICmpEQ(counter, cntToInject);
+            Value* cmp1 = builder.CreateICmpUGE(cntToInject, counter);
+            Value* cmp2 = builder.CreateICmpULT(cntToInject, counterInc);
+            Value* cmp  = builder.CreateAnd(cmp1, cmp2);
             #if __clang_major__ <= 3 
                 TerminatorInst *ThenTerm, *ElseTerm;
             #else
@@ -135,16 +137,14 @@ namespace {
       std::vector<Instruction *> toInject;
 
       IRBuilder<> builder(F.getEntryBlock().getFirstNonPHIOrDbgOrLifetime());
-      AllocaInst *counterPtr = builder.CreateAlloca(Type::getInt64Ty(Ctx), nullptr, "counterptr");
+      Constant *counterPtr = F.getParent()->getOrInsertGlobal("_instruction_counter", Type::getInt64Ty(Ctx)); 
       Value *addrToInject    = builder.CreateCall(shouldInject);
-
-      builder.CreateStore(builder.getInt64(0),counterPtr);
 
       uint64_t instrCount = 0;
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
         if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
-            if(!isa<CallInst>(*I) && (&*I != counterPtr)) {
+            if(!isa<CallInst>(*I)) {
                 instrCount++;
                 errs() << "Instr " << instrCount << " " << *I << "\n";
                 if(instrCount >= startOpt && instrCount < stopOpt)
@@ -169,9 +169,10 @@ namespace {
         // Modificamos a função
       }
      
-      builder.SetInsertPoint(toInject.back());
-      builder.CreateCall(printCounter, counterPtr);
-        
+      if(F.getName() == "main") {
+        builder.SetInsertPoint(toInject.back());
+        builder.CreateCall(printCounter, counterPtr);
+      }
       return true;
     }
   };

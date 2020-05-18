@@ -1,4 +1,5 @@
 from utils.Models import *
+from time import sleep
 
 class Report(object):
     """
@@ -9,7 +10,7 @@ class Report(object):
     location -- where to save the report (string)
     """
     def __init__(self, location):
-        database.connect()
+        database.start()
         database.create_tables([Campaign, Run])
 
     """
@@ -56,4 +57,5 @@ class Report(object):
     Arguments:
     """
     def add_run(self, run):
-        Run.insert(run).execute()
+        r = Run(**run)
+        r.save()

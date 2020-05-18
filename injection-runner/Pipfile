@@ -9,6 +9,7 @@ verify_ssl = true
 click = "*"
 colored = "*"
 peewee = "*"
+gevent = "*"
 
 [requires]
 python_version = "3.8"

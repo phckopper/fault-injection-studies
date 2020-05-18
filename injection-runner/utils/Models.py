@@ -1,8 +1,13 @@
+from sys import argv
 from peewee import *
 from playhouse.sqliteq import SqliteQueueDatabase
 import atexit
 
-database = SqliteDatabase("report.db")
+@atexit.register
+def _stop_worker_threads():
+    database.stop()
+
+database = SqliteQueueDatabase(argv[2] + "/results/report.db")
 
 class Campaign(Model):
     params = TextField()
@@ -19,6 +24,8 @@ class Instruction(Model):
 
 class Run(Model):
     campaign    = ForeignKeyField(Campaign, backref='runs')
+    path        = TextField()
+    testVec     = IntegerField()
     result      = TextField()
     hanged      = BooleanField()
     crashed     = BooleanField()

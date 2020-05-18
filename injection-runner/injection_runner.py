@@ -8,13 +8,13 @@ def cli():
     pass
 
 @cli.command()
-@click.argument('executable')
-@click.option('--instructions', required=True, help='how many instructions are run without flaws', type=int)
+@click.argument('base')
+@click.argument('name')
 @click.option('--tolerance', default=5, help='how many times slower should a run be to be a hang')
 @click.option('--threads', default=4, help='how many threads should be used')
-@click.option('--args', multiple=True, help='args to provide to executable')
-def run_campaign(executable, instructions, tolerance, threads, args):
-    c = Campaign(executable, instructions, tolerance, threads, list(args))
+@click.option('--samples', default=385, help='how many samples should be used')
+def run_campaign(base, name, tolerance, threads, samples):
+    c = Campaign(base, name, tolerance, threads, samples)
     c.run()
 
 if __name__ == '__main__':

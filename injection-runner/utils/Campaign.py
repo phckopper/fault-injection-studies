@@ -43,7 +43,7 @@ class Campaign(object):
                                              instr.width, instr.iters)
                 print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
                 for _ in range(self._nSamples):
-                    _iter = choice(range(instr.iters + 1))
+                    _iter = randint(0, instr.iters)
                     _mask = (1 << randint(0, instr.width - 1))
                     pool.submit(self._inject_instruction, instr.address, _mask, _iter)
         pool.shutdown()

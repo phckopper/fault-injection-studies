@@ -1,9 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor
-from random import choice 
+from random import choice, randint
 from time import time
 from colored import attr, fg, stylize
 from utils.Executable import Executable, ExecutionCrashed, ExecutionHanged
-from utils.Profile import Profile
+from utils.AddressMap import AddressMap
 from utils.Report import Report
 
 class Campaign(object):
@@ -13,15 +13,15 @@ class Campaign(object):
     single-flipped-bit bitmasks possible.
 
     Arguments:
-    base --
-    name --
+    executable --
+    profile --
     timeoutTolerance -- how many times slower should the run be to be considered a hang
     threads -- how many threads to include in pool
     """
-    def __init__(self, base, name, timeoutTolerance=5, threads=2, nSamples=385):
-        self._profile = Profile(base)
-        self._base = base
-        self._name = name
+    def __init__(self, executable, addressMap, testVec, timeoutTolerance=5, threads=2, nSamples=50):
+        self._map = AddressMap(addressMap)
+        self._exec = Executable(executable, testVec)
+        print(addressMap, executable, testVec)
         self._report = Report("report.log")
         self._nSamples = nSamples
         self._timeout = timeoutTolerance
@@ -34,36 +34,38 @@ class Campaign(object):
 
 
         print(stylize("Starting injection", fg("blue")))
-        profile = self._profile.load()
 
         with ThreadPoolExecutor(max_workers=self._threads) as pool:
-            for k in profile:
-                print(fg("green"), attr("bold"), "Now injecting ", k, attr("reset"))
-                exect = Executable(self._base, self._name, k)
-                print(stylize("Getting golden outputs...", fg("yellow")))
-                for n in profile[k]:
-                    self._report.add_golden(exect.run_golden(n))
+            for instr in self._map:
+                if instr.width == 0:
+                    instr.width = 32
+                instr_db = self._report.add_instruction(instr.address, instr.text,
+                                             instr.width, instr.iters)
+                print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
                 for _ in range(self._nSamples):
-                    sample = choice(list(profile[k].items()))
-                    pool.submit(self._inject_instruction, exect, sample[0], choice(range(sample[1])))
+                    _iter = choice(range(instr.iters + 1))
+                    _mask = (1 << randint(0, instr.width - 1))
+                    pool.submit(self._inject_instruction, instr.address, _mask, _iter)
         pool.shutdown()
 
-    def _inject_instruction(self, exect, vec, instr):
-        print(fg("white"), attr("bold"), "Injecting:\t", instr, " vec ", vec, attr("reset"))
+    def _inject_instruction(self, addr, mask, _iter):
+        print(fg("white"), attr("bold"), "Injecting:\t", addr, " mask ", mask, attr("reset"))
 
         hanged = False
         crashed = False
         result = b""
         try:
-            result = exect.run_injection(instr, vec, self._timeout)
+            result = self._exec.run_injection(addr, mask, _iter, self._timeout)
         except ExecutionHanged:
             print(fg("red"), "HANGED", attr("reset"))
             hanged = True
         except ExecutionCrashed:
             print(fg("red"), "CRASHED", attr("reset"))
             crashed = True
+        except Exception as e:
+            print(e)
+            raise e
         finally:
             r = dict(result=result.decode("utf-8"), hanged=hanged, 
-                     testVec=vec,
                      crashed=crashed, campaign=self._campaign)
         self._report.add_run(r)

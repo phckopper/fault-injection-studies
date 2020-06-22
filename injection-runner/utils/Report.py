@@ -11,7 +11,7 @@ class Report(object):
     """
     def __init__(self, location):
         database.start()
-        database.create_tables([Campaign, Run])
+        database.create_tables([Campaign, Run, Instruction])
 
     """
     Starts a new campaign with a new set of parameters
@@ -42,11 +42,12 @@ class Report(object):
     width -- bit width of it's value (int)
     text -- textual IR representation (string)
     """
-    def add_instruction(self, address, width, text):
+    def add_instruction(self, address, width, text, iters):
         instruction = Instruction()
         instruction.address = address
         instruction.width   = width
         instruction.text    = text
+        instruction.iters   = iters
         instruction.save()
         return instruction
 

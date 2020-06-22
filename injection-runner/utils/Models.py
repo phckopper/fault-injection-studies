@@ -7,7 +7,7 @@ import atexit
 def _stop_worker_threads():
     database.stop()
 
-database = SqliteQueueDatabase(argv[2] + "/results/report.db")
+database = SqliteQueueDatabase("report.db")
 
 class Campaign(Model):
     params = TextField()
@@ -18,6 +18,7 @@ class Campaign(Model):
 class Instruction(Model):
     address = IntegerField(unique=True, index=True)
     width   = IntegerField()
+    iters   = IntegerField()
     text    = TextField()
     class Meta:
         database = database

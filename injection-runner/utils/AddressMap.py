@@ -1,8 +1,9 @@
 class Instruction:
-    def __init__(self, address, text, width):
+    def __init__(self, address, text, width, iters):
         self.address = address
         self.text = text
         self.width = width
+        self.iters = iters
 
 class AddressMap(object):
     """
@@ -25,5 +26,6 @@ class AddressMap(object):
         self.addresses = []
         with open(location, "r") as f:
             for line in f:
-                data = line.split(",", 2)
-                self.addresses.append(Instruction(int(data[0]), data[2].strip(), int(data[1])))
+                data = line.split(",", 3)
+                self.addresses.append(Instruction(int(data[0]), data[3].strip(),
+                                                  int(data[2]), int(data[1])))

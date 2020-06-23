@@ -27,5 +27,5 @@ class AddressMap(object):
         with open(location, "r") as f:
             for line in f:
                 data = line.split(",", 3)
-                self.addresses.append(Instruction(int(data[0]), data[3].strip(),
-                                                  int(data[2]), int(data[1])))
+                self.addresses.append(Instruction(address=int(data[0]), text=data[3].strip(),
+                                                  width=int(data[2]), iters=int(data[1])))

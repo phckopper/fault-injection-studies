@@ -13,7 +13,7 @@ def cli():
 @click.argument('testvec')
 @click.option('--tolerance', default=5, help='how many times slower should a run be to be a hang')
 @click.option('--threads', default=4, help='how many threads should be used')
-@click.option('--samples', default=385, help='how many samples should be used')
+@click.option('--samples', default=30, help='how many samples should be used')
 def run_campaign(executable, addressmap, testvec, tolerance, threads, samples):
     c = Campaign(executable, addressmap, testvec, tolerance, threads, samples)
     c.run()

@@ -18,7 +18,7 @@ class Campaign(object):
     timeoutTolerance -- how many times slower should the run be to be considered a hang
     threads -- how many threads to include in pool
     """
-    def __init__(self, executable, addressMap, testVec, timeoutTolerance=5, threads=2, nSamples=50):
+    def __init__(self, executable, addressMap, testVec, timeoutTolerance=5, threads=2, nSamples=30):
         self._map = AddressMap(addressMap)
         self._exec = Executable(executable, testVec)
         print(addressMap, executable, testVec)
@@ -32,18 +32,21 @@ class Campaign(object):
         print(stylize("Starting campaign", fg("blue")))
         self._campaign = self._report.start_campaign()
 
+        print(stylize("Getting golden...", fg("yellow")))
+        self._exec.run_golden()
 
         print(stylize("Starting injection", fg("blue")))
-
         with ThreadPoolExecutor(max_workers=self._threads) as pool:
             for instr in self._map:
+                if instr.iters == 0:
+                    continue # this instruction never ran
                 if instr.width == 0:
-                    instr.width = 32
+                    instr.width = 64
                 instr_db = self._report.add_instruction(instr.address, instr.text,
                                              instr.width, instr.iters)
                 print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
                 for _ in range(self._nSamples):
-                    _iter = randint(0, instr.iters)
+                    _iter = randint(0, instr.iters - 1)
                     _mask = (1 << randint(0, instr.width - 1))
                     pool.submit(self._inject_instruction, instr.address, _mask, _iter)
         pool.shutdown()
@@ -68,4 +71,4 @@ class Campaign(object):
         finally:
             r = dict(result=result.decode("utf-8"), hanged=hanged, 
                      crashed=crashed, campaign=self._campaign)
-        self._report.add_run(r)
+            self._report.add_run(r)

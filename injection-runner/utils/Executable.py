@@ -19,9 +19,9 @@ class Executable(object):
         self._vector = vector
 
     """ Gets the executable golden output """
-    def run_golden(self, n):
+    def run_golden(self):
         env = dict(INJECTION_ADDR=str(sys.maxsize))
-        output = subprocess.run([self._path, self._vector,
+        output = subprocess.run([self._base, self._vector,
                                  self._get_output_file("golden", 0, 0)],
                                  stdout=subprocess.PIPE, env=env)
         return output.stdout
@@ -49,9 +49,6 @@ class Executable(object):
             if e.returncode < 0:
                 # TODO: differentiate between signals
                 raise ExecutionCrashed
-
-    def _get_test_vector(self, n):
-        return "{}/{}/Test Vectors/testVec{}.txt".format(self._base, self._name, n)
 
     def _get_output_file(self, address, mask, _iter):
         out = "results/{}-{}-{}.out".format(address, hex(mask), _iter)

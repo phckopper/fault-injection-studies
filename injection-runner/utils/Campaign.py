@@ -3,7 +3,7 @@ from random import choice, randint
 from time import time
 from colored import attr, fg, stylize
 from utils.Executable import Executable, ExecutionCrashed, ExecutionHanged
-from utils.AddressMap import AddressMap
+from utils.Profiler import Profiler
 from utils.Report import Report
 
 class Campaign(object):
@@ -18,47 +18,41 @@ class Campaign(object):
     timeoutTolerance -- how many times slower should the run be to be considered a hang
     threads -- how many threads to include in pool
     """
-    def __init__(self, executable, addressMap, testVec, timeoutTolerance=5, threads=2, nSamples=30):
-        self._map = AddressMap(addressMap)
-        self._exec = Executable(executable, testVec)
-        print(addressMap, executable, testVec)
+    def __init__(self, base, name, timeoutTolerance=5, threads=2, nSamples=30):
+        self._exec = Executable(base, name)
         self._report = Report("report.log")
         self._nSamples = nSamples
         self._timeout = timeoutTolerance
         self._threads = threads
+        self._vecs = 5
+        self._profiler = Profiler(self._exec, self._vecs, base + "/address.map", self._report)
 
     """Runs the campaign, printing the results to stdout"""
     def run(self):
         print(stylize("Starting campaign", fg("blue")))
-        self._campaign = self._report.start_campaign()
-
-        print(stylize("Getting golden...", fg("yellow")))
-        self._exec.run_golden()
+        print(stylize("Profiling....", fg("yellow")))
+        self._profiler.profile()
 
         print(stylize("Starting injection", fg("blue")))
         with ThreadPoolExecutor(max_workers=self._threads) as pool:
-            for instr in self._map:
-                if instr.iters == 0:
-                    continue # this instruction never ran
-                if instr.width == 0:
-                    instr.width = 64
-                instr_db = self._report.add_instruction(instr.address, instr.text,
-                                             instr.width, instr.iters)
-                print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
-                for _ in range(self._nSamples):
-                    _iter = randint(0, instr.iters - 1)
-                    _mask = (1 << randint(0, instr.width - 1))
-                    pool.submit(self._inject_instruction, instr.address, _mask, _iter)
+            for vec in range(1, self._vecs + 1):
+                self._exec.run_golden(vec)
+                for instr in self._report.get_instructions_by_vec(vec):
+                    print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
+                    for _ in range(self._nSamples):
+                        _iter = randint(0, instr.iters - 1)
+                        _mask = (1 << randint(0, instr.width - 1))
+                        pool.submit(self._inject_instruction, instr.address, _mask, _iter, vec)
         pool.shutdown()
 
-    def _inject_instruction(self, addr, mask, _iter):
+    def _inject_instruction(self, addr, mask, _iter, vec):
         print(fg("white"), attr("bold"), "Injecting:\t", addr, " mask ", mask, attr("reset"))
 
         hanged = False
         crashed = False
         result = b""
         try:
-            result = self._exec.run_injection(addr, mask, _iter, self._timeout)
+            result = self._exec.run_injection(addr, mask, _iter, vec, self._timeout)
         except ExecutionHanged:
             print(fg("red"), "HANGED", attr("reset"))
             hanged = True

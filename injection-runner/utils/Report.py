@@ -11,39 +11,32 @@ class Report(object):
     """
     def __init__(self, location):
         database.start()
-        database.create_tables([Campaign, Run, Instruction])
+        database.create_tables([TestVector, Run, Instruction])
 
     """
-    Starts a new campaign with a new set of parameters
-
-    Arguments:
-    params -- parameters used for the simulations
-    """
-    def start_campaign(self, params=""):
-        self._current_campaign = Campaign(params=params)
-        return self._current_campaign
-
-    """
-    Adds golden output to report.
-    It's the correct output to which all runs will be compared to.
+    Adds a new test vector to the database
 
     Arguments:
-    golden -- golden output (string)
+    code -- test vector code
     """
-    def add_golden(self, golden):
-        self._current_campaign.golden = golden.decode("utf-8")
-        self._current_campaign.save()
+    def add_test_vector(self, code):
+        vector = TestVector(code=code)
+        vector.save()
+        return vector
 
     """
     Adds a new instruction to the database
 
     Arguments:
+    vector -- test vector used for profiling
     address -- address of the instruction (int)
     width -- bit width of it's value (int)
     text -- textual IR representation (string)
+    iters -- number of times the instruction ran (int)
     """
-    def add_instruction(self, address, width, text, iters):
+    def add_instruction(self, vector, address, width, text, iters):
         instruction = Instruction()
+        instruction.testVec = vector
         instruction.address = address
         instruction.width   = width
         instruction.text    = text
@@ -60,3 +53,9 @@ class Report(object):
     def add_run(self, run):
         r = Run(**run)
         r.save()
+
+    """
+    """
+    def get_instructions_by_vec(self, vec):
+        v = TestVector.get(TestVector.code == vec)
+        return Instruction.select().where(Instruction.testVec == v)

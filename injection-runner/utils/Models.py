@@ -9,14 +9,14 @@ def _stop_worker_threads():
 
 database = SqliteQueueDatabase("report.db")
 
-class Campaign(Model):
-    params = TextField()
-    golden = TextField()
+class TestVector(Model):
+    code    = IntegerField()
     class Meta:
         database = database
 
 class Instruction(Model):
-    address = IntegerField(unique=True, index=True)
+    testVec = ForeignKeyField(TestVector, backref='testVec')
+    address = IntegerField()
     width   = IntegerField()
     iters   = IntegerField()
     text    = TextField()
@@ -24,7 +24,7 @@ class Instruction(Model):
         database = database
 
 class Run(Model):
-    campaign    = ForeignKeyField(Campaign, backref='runs')
+    testVec     = ForeignKeyField(TestVector, backref='testVec')
     path        = TextField()
     testVec     = IntegerField()
     result      = TextField()

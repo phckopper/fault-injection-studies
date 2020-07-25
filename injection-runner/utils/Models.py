@@ -7,7 +7,7 @@ import atexit
 def _stop_worker_threads():
     database.stop()
 
-database = SqliteQueueDatabase("report.db")
+database = SqliteQueueDatabase(argv[2] + "report.db")
 
 class TestVector(Model):
     code    = IntegerField()

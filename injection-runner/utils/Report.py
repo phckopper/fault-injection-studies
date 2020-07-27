@@ -9,7 +9,7 @@ class Report(object):
     Arguments:
     location -- where to save the report (string)
     """
-    def __init__(self, location):
+    def __init__(self):
         database.start()
         database.create_tables([TestVector, Run, Instruction])
 

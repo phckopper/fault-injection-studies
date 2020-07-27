@@ -20,7 +20,7 @@ class Campaign(object):
     """
     def __init__(self, base, name, timeoutTolerance=5, threads=2, nSamples=30):
         self._exec = Executable(base, name)
-        self._report = Report("report.log")
+        self._report = Report()
         self._nSamples = nSamples
         self._timeout = timeoutTolerance
         self._threads = threads

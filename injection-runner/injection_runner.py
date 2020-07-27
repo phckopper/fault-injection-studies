@@ -2,6 +2,7 @@
 
 import click
 from utils.Campaign import Campaign
+from utils.ReportGenerator import ReportGenerator
 
 @click.group()
 def cli():
@@ -16,6 +17,12 @@ def cli():
 def run_campaign(base, name, tolerance, threads, samples):
     c = Campaign(base, name, tolerance, threads, samples)
     c.run()
+
+@cli.command()
+@click.argument('base')
+def generate_report(base):
+    g = ReportGenerator(base)
+    g.run()
 
 if __name__ == '__main__':
     cli()

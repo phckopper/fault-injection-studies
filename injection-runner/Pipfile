@@ -10,6 +10,7 @@ click = "*"
 colored = "*"
 peewee = "*"
 gevent = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.8"

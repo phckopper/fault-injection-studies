@@ -38,6 +38,8 @@ class Campaign(object):
             for vec in range(1, self._vecs + 1):
                 self._exec.run_golden(vec)
                 for instr in self._report.get_instructions_by_vec(vec):
+                    if instr.iters == 0:
+                        continue # dirty dirty dirty hack, this should be handled in sql
                     print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
                     for _ in range(self._nSamples):
                         _iter = randint(0, instr.iters - 1)

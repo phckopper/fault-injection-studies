@@ -18,8 +18,6 @@ class Profiler(object):
             for instr in instructions:
                 iters = counts[str(instr.address)]
                 print(vector, instr.text, iters)
-                if iters == 0:
-                    continue # this instruction never ran
                 if instr.width == 0: # it's a pointer! assume it's 64 bit
                     instr.width = 64
                 self._report.add_instruction(vector, instr.address, instr.width,

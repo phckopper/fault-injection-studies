@@ -30,8 +30,8 @@ class ReportGenerator(object):
                 for f in glob("{}/outputs/{}-{}-*.out".format(self.base, instr.address, v)):
                     crashang -= 1
                     data = self.lib.load_output(f)
-                    if len(data) != self.lib.LEN:
-                        data = np.zeros(self.lib.LEN)
+                    if len(data) != len(self.goldens[v-1]):
+                        data = np.zeros(len(self.goldens[v-1]))
 
                     mse = self.calc_mse(data, self.goldens[v-1])
                     self.csv.write("{:.5f};".format(mse))

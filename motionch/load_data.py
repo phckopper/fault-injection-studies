@@ -1,4 +1,4 @@
-LEN = 1344
+LEN = 1336
 CAP = 2**7 - 1
 
 clamp = lambda n: max(min(CAP, n), -CAP)

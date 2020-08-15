@@ -128,7 +128,7 @@ namespace {
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
         if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
-            if(!isa<CallInst>(*I)) {
+            if(!isa<CallInst>(*I) && !isa<LoadInst>(*I)) {
                 errs() << "Instr " << *I << "\n";
                     toInject.push_back(&*I);
             }
@@ -144,7 +144,8 @@ namespace {
       #endif
 
       for(Instruction *I: toInject) {
-        std::uintptr_t address = reinterpret_cast<std::uintptr_t>(I);
+        auto address = std::stoi(dyn_cast<MDString>(I->getMetadata("ufrgs.lse.id")->getOperand(0))->getString());
+        errs() << address << "\n";
         injectInstruction(I, address, getInjectionMaskIfApplicable); 
 
         address_map << address << "," << I->getType()->getPrimitiveSizeInBits() << "," << *I << "\n";

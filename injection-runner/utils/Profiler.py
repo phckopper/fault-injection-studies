@@ -1,3 +1,4 @@
+from time import sleep
 from collections import defaultdict
 from utils.AddressMap import AddressMap
 
@@ -9,7 +10,9 @@ class Profiler(object):
         self._report = report
 
     def profile(self):
-        instructions = list(self._map)
+        instructions = self._map.get_map()
+        print(instructions[0].address, instructions[0].text)
+        sleep(10)
         for v in range(1, self._nvectors + 1):
             print("Profiling test vector ", v)
             vector = self._report.add_test_vector(v)

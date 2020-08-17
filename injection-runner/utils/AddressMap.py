@@ -10,16 +10,9 @@ class AddressMap(object):
     """
     def __init__(self, location):
         self._load_address_map(location)
-        self.iter = 0
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        self.iter += 1
-        if self.iter >= len(self.addresses):
-            raise StopIteration
-        return self.addresses[self.iter]
+    def get_map(self):
+        return self.addresses
 
     def _load_address_map(self, location):
         self.addresses = []

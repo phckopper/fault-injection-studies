@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from random import choice, randint
+from random import choice, choices, randint
 from time import time
 from colored import attr, fg, stylize
 from utils.Executable import Executable, ExecutionCrashed, ExecutionHanged
@@ -18,8 +18,9 @@ class Campaign(object):
     timeoutTolerance -- how many times slower should the run be to be considered a hang
     threads -- how many threads to include in pool
     """
-    def __init__(self, base, name, timeoutTolerance=5, threads=2, nSamples=30):
+    def __init__(self, base, name, mode, timeoutTolerance=5, threads=2, nSamples=30):
         self._exec = Executable(base, name)
+        self._mode = mode
         self._report = Report()
         self._nSamples = nSamples
         self._timeout = timeoutTolerance
@@ -32,8 +33,29 @@ class Campaign(object):
         print(stylize("Starting campaign", fg("blue")))
         print(stylize("Profiling....", fg("yellow")))
         self._profiler.profile()
+        if self._mode == "dft":
+            self.inject_dft()
+        elif self._mode == "fthls":
+            self.inject_fthls()
+        else:
+            print(stylize("Invalid mode!", fg("red")))
 
-        print(stylize("Starting injection", fg("blue")))
+    def inject_dft(self):
+        print(stylize("Starting injection (DFT or D&T)", fg("blue")))
+        with ThreadPoolExecutor(max_workers=self._threads) as pool:
+            for vec in range(1, self._vecs + 1):
+                self._exec.run_golden(vec)
+                instructions = self._report.get_instructions_by_vec(vec)
+                chosen_instr = choices(instructions, weights=(i.iters for i in instructions), k=self._nSamples)
+                for instr in chosen_instr:
+                    print(fg("green"), attr("bold"), "Now injecting ", instr.text, attr("reset"))
+                    _iter = randint(0, instr.iters - 1)
+                    _mask = (1 << randint(0, instr.width - 1))
+                    pool.submit(self._inject_instruction, instr.address, _mask, _iter, vec)
+        pool.shutdown()
+
+    def inject_fthls(self):
+        print(stylize("Starting injection (FTHLS)", fg("blue")))
         with ThreadPoolExecutor(max_workers=self._threads) as pool:
             for vec in range(1, self._vecs + 1):
                 self._exec.run_golden(vec)

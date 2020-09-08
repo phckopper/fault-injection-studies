@@ -11,8 +11,6 @@ class Profiler(object):
 
     def profile(self):
         instructions = self._map.get_map()
-        print(instructions[0].address, instructions[0].text)
-        sleep(10)
         for v in range(1, self._nvectors + 1):
             print("Profiling test vector ", v)
             vector = self._report.add_test_vector(v)

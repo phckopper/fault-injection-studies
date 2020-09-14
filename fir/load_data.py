@@ -1,15 +1,14 @@
 LEN = 8000
-CAP = 2**23 - 1
 
+CAP = 2**22
 clamp = lambda n: max(min(CAP, n), -CAP)
-def getSignedNumber(number, bitLength):
-    mask = (2 ** bitLength) - 1
-    if number & (1 << (bitLength - 1)):
-        return number | ~mask
+def getModNumber(n):
+    if n > 0:
+        return n % (CAP - 1)
     else:
-        return number & mask
+        return n % (CAP * -1)
 
 def load_output(name):
         with open(name, "r") as f:
-                    return [getSignedNumber(int(line), 23) for line in f]
+                    return [getModNumber(int(line)) for line in f]
 

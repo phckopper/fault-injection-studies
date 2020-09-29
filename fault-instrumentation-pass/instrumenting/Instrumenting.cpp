@@ -128,7 +128,7 @@ namespace {
       for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
         //if(I->getType() == Type::getInt32Ty(Ctx) || I->getType() == Type::getFloatTy(Ctx)) {
         if(I->getType()->isFloatTy() || I->getType()->isDoubleTy() || I->getType()->isIntegerTy() || I->getType()->isPointerTy())
-            if(!isa<CallInst>(*I) && !isa<LoadInst>(*I)) {
+            if(!isa<CallInst>(*I) && !I->isCast()) {
                 errs() << "Instr " << *I << "\n";
                     toInject.push_back(&*I);
             }
